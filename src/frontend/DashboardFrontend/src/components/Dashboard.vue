@@ -28,8 +28,8 @@
 </template>
 
 <script>
-import { GridLayout, GridItem } from "vue-grid-layout";
-import ChartComponent from "./ChartComponent.vue";
+import { GridLayout, GridItem } from 'vue-grid-layout'
+import ChartComponent from './ChartComponent.vue'
 
 export default {
   components: {
@@ -48,20 +48,20 @@ export default {
           w: 4,
           h: 4,
           data: {
-            labels: ["Postgres Pro", "Kaspersky", "P7", "Astra", "ASCON", "AI Content"],
+            labels: ['Postgres Pro', 'Kaspersky', 'P7', 'Astra', 'ASCON', 'AI Content'],
             datasets: [
               {
-                label: "Sales Plan",
+                label: 'Sales Plan',
                 data: [100000, 1200000, 500000, 1000000, 700000, 300000],
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                borderColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1,
               },
               {
-                label: "Actual Sales",
+                label: 'Actual Sales',
                 data: [80000, 800000, 467000, 765000, 300000, 191919],
-                backgroundColor: "rgba(153, 102, 255, 0.2)",
-                borderColor: "rgba(153, 102, 255, 1)",
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
                 borderWidth: 1,
               },
             ],
@@ -69,19 +69,19 @@ export default {
         },
         // Add more chart objects as needed
       ],
-    };
+    }
   },
   methods: {
     updateData() {
       // Simulate data update
-      console.log("Data updated");
+      console.log('Data updated')
     },
     generateReport() {
       // Simulate report generation
-      console.log("Report generated");
+      console.log('Report generated')
     },
   },
-};
+}
 </script>
 
 <style>
@@ -91,4 +91,4 @@ export default {
 .controls {
   margin-bottom: 20px;
 }
-</style> 
+</style>
