@@ -8,7 +8,7 @@ using OfficeOpenXml;
 
 namespace DashboardBackend.Core
 {
-    public partial class ReportService(IReportRepository reportRepository, ISaleRepository saleRepository)
+    public partial class ReportService(ICategoryRepository categoryRepository, IProductGroupRepository productGroupRepository, IReportRepository reportRepository, ISaleRepository saleRepository)
     {
         private static readonly Regex YearFormatRegex = GetYearFormatRegex();
 
@@ -17,13 +17,51 @@ namespace DashboardBackend.Core
             using var package = new ExcelPackage(file);
             foreach (var sheet in package.Workbook.Worksheets)
             {
-                var report = new ReportDto();
+                // TODO: Add info from the page
                 if (!TryParseReportString(sheet.Name, out int year, out int quarter))
                     continue;
+                var categories = new List<CategoryDto>();
+                var products = new List<ProductGroupDto>();
+                var report = new ReportDto();
+                var sales = new List<SaleDto>();
+
+                int i = 0;
+                string startRowCatNumber = "11";
+                while (sheet.Cells["A" + startRowCatNumber].Rows > 1) // replace
+                {
+                    categories[i].Name = sheet.Cells["A" + startRowCatNumber].Value.ToString();
+                    categories[i].Weight = (sheet.Cells["B" + startRowCatNumber].Value as decimal?) ?? 0;
+
+                    string startRowPrNumber = startRowCatNumber;
+                    int j = 0;
+                    while (!sheet.Cells["C" + startRowPrNumber].Value.ToString().Contains(':')) // replace
+                    {
+                        products[j].Name = sheet.Cells["C" + startRowPrNumber].Value.ToString();
+                        products[j].Region = "-".ToString();
+                        categories[i].ProductIds.Add(j);
+                        products[j].CategoryId = i;
+
+                        sales[j].TargetAmount = (sheet.Cells["F" + startRowPrNumber].Value as decimal?) ?? 0;
+                        sales[j].ActualSales = (sheet.Cells["F" + $"{int.Parse(startRowPrNumber) + 1}"].Value as decimal?) ?? 0;
+                        sales[j].ProductId = j;
+                        sales[j].ReportId = 0;
+                        // products[j].CompletePercent = ActualSales/TargetAmount;
+
+                        j++;
+                        startRowPrNumber = $"{int.Parse(startRowPrNumber) + sheet.Cells["C" + startRowPrNumber].Rows}";
+                    }
+                    // categories[i].GeneralCompletePercent = ActualSales[j-е]/TargetAmount[j-е]
+                    // categories[i].CompleteTasks = products.Count(ActualSales/TargetAmount > 1);
+                    //if (categories[i].CompleteTasks == products.Count)
+                    //    categories[i].Award = categories[i].Weight;
+                    // else categories[i].Award = (decimal)0;
+
+                    i++;
+                    startRowCatNumber = $"{int.Parse(startRowCatNumber)+sheet.Cells["A"+startRowCatNumber].Rows}";
+                }
+
                 report.Year = year;
                 report.Quarter = quarter;
-
-                // TODO: Add info from the page
 
                 await UploadReportAsync(report);
             }
