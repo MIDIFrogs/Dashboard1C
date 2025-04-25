@@ -1,9 +1,24 @@
 @import './base.css';
 #app {
-    max-width: 1920px;
+    max-width: 100%;
+    width: 100%;
     margin: 0 !important;
-    padding: 2rem;
+    padding: 0;
     font-weight: normal;
+    overflow-x: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    background-color: var(--color-background);
 }
 
 a,
@@ -26,8 +41,97 @@ a,
         place-items: center;
     }
     #app {
-        display: grid;
         width: 100%;
-        padding: 0 2rem;
+        min-height: 100vh;
+        padding: 0;
     }
+}
+
+
+/* Header and Footer styles */
+
+.header,
+.footer {
+    width: 100%;
+    z-index: 10;
+}
+
+
+/* Main content area */
+
+.dashboard-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+
+/* Chart styling fixes */
+
+canvas.chartjs-render-monitor {
+    max-height: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+
+/* Ensure charts don't overflow */
+
+.chartjs-size-monitor-expand,
+.chartjs-size-monitor-shrink {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    visibility: hidden;
+    z-index: -1;
+}
+
+
+/* Improved grid container styles */
+
+.dashboard-grid {
+    container-type: inline-size;
+    container-name: grid;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(300px, auto);
+    gap: 1.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+
+/* Better responsive handling for charts */
+
+@container grid (max-width: 1200px) {
+    canvas {
+        max-height: 300px !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+
+/* Ensure consistent sizing for doughnut/pie charts */
+
+canvas.chartjs-render-monitor[data-chartjs-type="doughnut"],
+canvas.chartjs-render-monitor[data-chartjs-type="pie"] {
+    max-height: 300px !important;
+    margin: 0 auto;
 }
