@@ -67,29 +67,21 @@ namespace DashboardBackend.Api.Controllers
         /// <param name="file">The Excel file to upload.</param>
         /// <returns>The result of the operation.</returns>
         [HttpPost("import")]
-        public async Task<IActionResult> UploadReportFromExcel([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadReportFromExcel(IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
                 return BadRequest("No file uploaded.");
             }
 
-            // Проверка на тип файла (например, .xlsx)
+            // Check filename (.xlsx only supported)
             if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.CurrentCultureIgnoreCase))
             {
                 return BadRequest("Invalid file type. Please upload an Excel file.");
             }
 
-            try
-            {
-                await reportsService.ImportReportFromExcelAsync(file.OpenReadStream());
-                return Ok("Report uploaded successfully.");
-            }
-            catch (Exception ex)
-            {
-                // Логирование ошибки (если необходимо)
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            await reportsService.ImportReportFromExcelAsync(file.OpenReadStream());
+            return Ok("Report uploaded successfully.");
         }
 
         /// <summary>
