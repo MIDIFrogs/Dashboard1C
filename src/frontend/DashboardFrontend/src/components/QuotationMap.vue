@@ -1,5 +1,8 @@
 <template>
   <div class="quotation-map">
+    <div class="quotation-map-title">
+      <h3>Sales Quotation Map</h3>
+    </div>
     <div v-if="isLoading" class="loading-state">
       Loading categories...
     </div>
@@ -255,12 +258,31 @@ const endTransition = (el: Element): void => {
 
 <style scoped>
 .quotation-map {
-  padding: 20px;
   height: 100%;
-  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.quotation-map-title {
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.quotation-map-title h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .categories-grid {
+  overflow-y: auto;
+  padding: 0.5rem;
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
