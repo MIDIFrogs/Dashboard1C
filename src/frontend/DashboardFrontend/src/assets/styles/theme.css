@@ -1,0 +1,50 @@
+:root {
+    --primary-color: #00f2fe;
+    --secondary-color: #4facfe;
+    --background-dark: #1a1b1f;
+    --background-light: #2a2b30;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --accent-color: #7b42f6;
+    --success-color: #00ff9d;
+    --warning-color: #ffd700;
+    --error-color: #ff4757;
+    --card-background: rgba(42, 43, 48, 0.7);
+    --card-border: 1px solid rgba(255, 255, 255, 0.1);
+    --glass-effect: backdrop-filter: blur(10px);
+}
+
+
+/* Animations */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 5px var(--primary-color);
+    }
+    50% {
+        box-shadow: 0 0 20px var(--primary-color);
+    }
+    100% {
+        box-shadow: 0 0 5px var(--primary-color);
+    }
+}
