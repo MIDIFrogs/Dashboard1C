@@ -3,12 +3,12 @@
     <div class="card-header">
       <h3>{{ title }}</h3>
       <div class="card-controls">
-        <button class="control-btn" @click="toggleFullscreen">
+        <button class="control-btn" @click="$emit('toggleFullscreen')">
           <span class="icon">⤢</span>
         </button>
       </div>
     </div>
-    <div class="diagram" :class="type">
+    <div class="chart-container">
       <canvas ref="chartCanvas"></canvas>
     </div>
   </div>
@@ -27,7 +27,11 @@ export default {
     },
     type: {
       type: String,
-      default: 'histogram'
+      default: 'bar'
+    },
+    color: {
+      type: String,
+      default: '#00f2fe'
     }
   },
   setup(props) {
@@ -38,89 +42,206 @@ export default {
       if (!chartCanvas.value) return
 
       const ctx = chartCanvas.value.getContext('2d')
-      const data = generateDummyData(props.type)
+      const data = generateChartData(props.type, props.color)
+
+      if (chart) {
+        chart.destroy()
+      }
 
       chart = new Chart(ctx, data)
     }
 
-    const generateDummyData = (type) => {
+    const generateChartData = (type, color) => {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      const randomData = () => Array.from({ length: 12 }, () => Math.floor(Math.random() * 100))
+
       switch (type) {
-        case 'histogram':
+        case 'bar':
           return {
             type: 'bar',
             data: {
-              labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+              labels: months,
               datasets: [{
                 label: 'Revenue',
-                data: [65, 59, 80, 81, 56, 55],
-                backgroundColor: 'rgba(0, 242, 254, 0.5)',
-                borderColor: 'rgba(0, 242, 254, 1)',
-                borderWidth: 1
+                data: randomData(),
+                backgroundColor: `${color}40`,
+                borderColor: color,
+                borderWidth: 2
               }]
             },
             options: {
               responsive: true,
-              maintainAspectRatio: false
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: '#fff'
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  ticks: { color: '#fff' },
+                  grid: { color: '#ffffff20' }
+                },
+                x: {
+                  ticks: { color: '#fff' },
+                  grid: { color: '#ffffff20' }
+                }
+              }
             }
           }
-        case 'windrose':
+        case 'line':
+          return {
+            type: 'line',
+            data: {
+              labels: months,
+              datasets: [{
+                label: 'Trends',
+                data: randomData(),
+                borderColor: color,
+                tension: 0.4,
+                fill: true,
+                backgroundColor: `${color}20`
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: '#fff'
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  ticks: { color: '#fff' },
+                  grid: { color: '#ffffff20' }
+                },
+                x: {
+                  ticks: { color: '#fff' },
+                  grid: { color: '#ffffff20' }
+                }
+              }
+            }
+          }
+        case 'pie':
+          return {
+            type: 'pie',
+            data: {
+              labels: ['Product A', 'Product B', 'Product C', 'Product D'],
+              datasets: [{
+                data: [30, 25, 20, 25],
+                backgroundColor: [
+                  color,
+                  `${color}80`,
+                  `${color}60`,
+                  `${color}40`
+                ]
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'right',
+                  labels: {
+                    color: '#fff'
+                  }
+                }
+              }
+            }
+          }
+        case 'radar':
           return {
             type: 'radar',
             data: {
-              labels: ['Sales', 'Marketing', 'Development', 'Support', 'HR', 'Legal'],
+              labels: ['Sales', 'Marketing', 'Development', 'Customer Support', 'HR', 'Legal'],
               datasets: [{
-                label: 'Performance',
-                data: [85, 65, 75, 80, 60, 70],
-                backgroundColor: 'rgba(123, 66, 246, 0.5)',
-                borderColor: 'rgba(123, 66, 246, 1)',
-                borderWidth: 1
+                label: 'Current',
+                data: randomData().slice(0, 6),
+                backgroundColor: `${color}40`,
+                borderColor: color,
+                borderWidth: 2
               }]
             },
             options: {
               responsive: true,
-              maintainAspectRatio: false
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: '#fff'
+                  }
+                }
+              },
+              scales: {
+                r: {
+                  angleLines: {
+                    color: '#ffffff20'
+                  },
+                  grid: {
+                    color: '#ffffff20'
+                  },
+                  pointLabels: {
+                    color: '#fff'
+                  }
+                }
+              }
             }
           }
-        case 'heatmap':
+        case 'area':
           return {
-            type: 'scatter',
+            type: 'line',
             data: {
+              labels: months,
               datasets: [{
-                label: 'Performance',
-                data: Array.from({ length: 20 }, () => ({
-                  x: Math.random() * 100,
-                  y: Math.random() * 100
-                })),
-                backgroundColor: 'rgba(0, 255, 157, 0.5)'
+                label: 'Growth',
+                data: randomData(),
+                borderColor: color,
+                backgroundColor: `${color}40`,
+                fill: true,
+                tension: 0.4
               }]
             },
             options: {
               responsive: true,
-              maintainAspectRatio: false
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: '#fff'
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  ticks: { color: '#fff' },
+                  grid: { color: '#ffffff20' }
+                },
+                x: {
+                  ticks: { color: '#fff' },
+                  grid: { color: '#ffffff20' }
+                }
+              }
             }
           }
       }
-    }
-
-    const toggleFullscreen = () => {
-      const card = chartCanvas.value.closest('.card')
-      card.classList.toggle('fullscreen')
     }
 
     onMounted(() => {
       createChart()
     })
 
-    watch(() => props.type, () => {
-      if (chart) {
-        chart.destroy()
-      }
+    watch(() => [props.type, props.color], () => {
       createChart()
     })
 
     return {
-      chartCanvas,
-      toggleFullscreen
+      chartCanvas
     }
   }
 }
@@ -131,37 +252,34 @@ export default {
   background: var(--card-background);
   border: var(--card-border);
   border-radius: 12px;
-  padding: 20px;
-  margin: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  --glass-effect: backdrop-filter: blur(10px);
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .card-header h3 {
   color: var(--text-primary);
   margin: 0;
-  font-size: 1.2rem;
-}
-
-.card-controls {
-  display: flex;
-  gap: 8px;
+  font-size: 1.1rem;
 }
 
 .control-btn {
   background: transparent;
   border: 1px solid var(--primary-color);
   color: var(--primary-color);
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -175,9 +293,17 @@ export default {
   color: var(--background-dark);
 }
 
-.diagram {
-  height: 250px;
+.chart-container {
+  flex: 1;
   position: relative;
+  width: 100%;
+  min-height: 0; /* Important for flex container */
+  overflow: hidden;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .fullscreen {
@@ -188,9 +314,10 @@ export default {
   width: 90vw;
   height: 90vh;
   z-index: 1000;
+  background: var(--background-dark);
 }
 
-.fullscreen .diagram {
-  height: calc(90vh - 100px);
+.fullscreen .chart-container {
+  height: calc(90vh - 80px);
 }
 </style> 

@@ -72,19 +72,22 @@ const cards = ref([
 html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .app-container {
   min-height: 100vh;
+  width: 100vw;
   background: linear-gradient(135deg, var(--background-dark), var(--background-light));
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
   margin: 0;
   padding: 0;
+  position: relative;
 }
 
 /* Header - fixed at top */
@@ -96,72 +99,67 @@ html, body {
   display: flex;
   align-items: center;
   padding: 0 24px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
   z-index: 100;
 }
 
 /* Main content area */
 main {
-  margin-top: 50px; /* Space for header */
-  padding: 16px;
-  min-height: calc(100vh - 50px); /* Minimum height to push footer down */
+  padding: 24px 32px 64px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .static-cards {
   display: grid;
-  grid-template-columns: 65% 33%;
+  grid-template-columns: 75% 23%;
   gap: 2%;
-  height: 450px;
-  min-height: 450px;
+  height: 500px;
   width: 100%;
+  margin-bottom: 32px;
 }
 
 .quotation-map {
   background: var(--card-background);
   border: var(--card-border);
-  border-radius: 12px;
+  border-radius: 16px;
   height: 100%;
   width: 100%;
-  padding: 20px;
+  padding: 24px;
 }
 
 .notification-window {
   background: var(--card-background);
   border: var(--card-border);
-  border-radius: 12px;
+  border-radius: 16px;
   height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
   overflow: auto;
-  padding: 20px;
+  padding: 24px;
 }
 
 .dynamic-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 32px;
   width: 100%;
-  padding: 4px;
+  margin-bottom: 32px;
 }
 
 .draggable-card {
   background: var(--card-background);
   border: var(--card-border);
-  border-radius: 12px;
+  border-radius: 16px;
   height: 400px;
   cursor: move;
   transition: all 0.3s ease;
-  min-height: 300px;
-  min-width: 350px;
-  padding: 20px;
+  padding: 24px;
   position: relative;
+  overflow: hidden;
 }
 
 .draggable-card:hover {
@@ -171,23 +169,35 @@ main {
 
 /* Footer */
 :deep(footer) {
-  height: 50px;
+  height: 40px;
   background: var(--card-background);
   border-top: var(--card-border);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 20px;
   padding: 0 24px;
   width: 100%;
+  margin-top: auto;
 }
 
-@media (max-width: 1600px) {
+@media (max-width: 1440px) {
   .dynamic-cards {
     grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .draggable-card {
+    height: 350px;
   }
 }
 
 @media (max-width: 1024px) {
+  main {
+    padding: 16px 24px 48px;
+  }
+
   .static-cards {
     grid-template-columns: 1fr;
     gap: 24px;
