@@ -28,8 +28,8 @@ namespace DashboardBackend.Core.Transfer
         /// This field is required and must be between 1 and 4.
         /// </summary>
         /// <exception cref="ValidationException">Thrown when the quarter is not in the valid range.</exception>
-        [Required(ErrorMessage = "Year is required.")]
-        [Range(1900, 10000, ErrorMessage = "Year must be between 1900 and 10000.")]
+        [Required(ErrorMessage = "Quarter is required.")]
+        [Range(1, 4, ErrorMessage = "Quarter must be between 1 and 4.")]
         public int Quarter { get; set; }
 
         /// <summary>

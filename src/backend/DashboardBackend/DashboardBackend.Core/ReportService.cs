@@ -6,7 +6,7 @@ using DashboardBackend.Data.Models;
 
 namespace DashboardBackend.Core
 {
-    public class ReportService(IRepository<Sale> saleRepository)
+    public class ReportService(ISaleRepository saleRepository)
     {
         public async Task UploadReportAsync(ReportDto reportDto)
         {
