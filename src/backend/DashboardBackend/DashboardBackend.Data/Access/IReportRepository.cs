@@ -4,8 +4,8 @@ using DashboardBackend.Data.Models;
 
 namespace DashboardBackend.Data.Access
 {
-    public interface ICategoryRepository : IRepository<Category>
+    public interface IReportRepository : IRepository<Report>
     {
-        Task<Category?> GetCategoryByNameAsync(string name);
+        Task<Report?> GetByDateAsync(int year, int quarter);
     }
 }

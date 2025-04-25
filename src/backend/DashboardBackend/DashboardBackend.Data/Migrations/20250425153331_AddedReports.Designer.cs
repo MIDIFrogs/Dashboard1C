@@ -2,6 +2,7 @@
 using DashboardBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DashboardBackend.Data.Migrations
 {
     [DbContext(typeof(DashboardDbContext))]
-    partial class DashboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250425153331_AddedReports")]
+    partial class AddedReports
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -30,9 +33,6 @@ namespace DashboardBackend.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("Categories");
                 });
@@ -58,9 +58,6 @@ namespace DashboardBackend.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("Products");
                 });
 
@@ -77,9 +74,6 @@ namespace DashboardBackend.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Year", "Quarter")
-                        .IsUnique();
 
                     b.ToTable("Reports");
                 });

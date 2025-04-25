@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DashboardBackend.Api.Transfer
+namespace DashboardBackend.Core.Transfer
 {
     /// <summary>
     /// Represents a data transfer object for a category.
@@ -30,9 +30,9 @@ namespace DashboardBackend.Api.Transfer
         public decimal Weight { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of product groups associated with the category.
+        /// Gets or sets the list of product group IDs associated with the category.
         /// </summary>
-        public List<ProductGroupDto> Products { get; set; } = [];
+        public List<int> ProductIds { get; set; } = [];
     }
 
 }

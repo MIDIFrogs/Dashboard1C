@@ -1,4 +1,4 @@
-﻿using DashboardBackend.Api.Transfer;
+﻿using DashboardBackend.Core.Transfer;
 using DashboardBackend.Data.Access;
 using DashboardBackend.Data.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +60,7 @@ namespace DashboardBackend.Api.Controllers
             var productGroup = new ProductGroup
             {
                 Name = productGroupDto.Name,
+                Region = productGroupDto.Region,
                 CategoryId = productGroupDto.CategoryId
             };
 
@@ -94,6 +95,7 @@ namespace DashboardBackend.Api.Controllers
 
             existingProductGroup.Name = productGroupDto.Name;
             existingProductGroup.CategoryId = productGroupDto.CategoryId;
+            existingProductGroup.Region = productGroupDto.Region;
 
             await productsRepository.UpdateAsync(existingProductGroup);
             return NoContent(); // 204 No Content
@@ -117,5 +119,4 @@ namespace DashboardBackend.Api.Controllers
             return NoContent(); // 204 No Content
         }
     }
-
 }

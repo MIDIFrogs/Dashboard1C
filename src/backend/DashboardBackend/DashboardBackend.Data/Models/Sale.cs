@@ -4,9 +4,9 @@ namespace DashboardBackend.Data.Models
 {
     public class Sale
     {
-        public int SaleId { get; set; }
-        public int Year { get; set; }
-        public int Quarter { get; set; }
+        public int Id { get; set; }
+        public int ReportId { get; set; }
+        public Report Report { get; set; }
         public int ProductId { get; set; }
         public ProductGroup Product { get; set; }
         public decimal TargetAmount { get; set; }

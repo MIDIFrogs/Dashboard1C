@@ -6,5 +6,6 @@ namespace DashboardBackend.Data.Access
 {
     public interface IProductGroupRepository : IRepository<ProductGroup>
     {
+        Task<ProductGroup?> GetProductGroupByNameAsync(string name);
     }
 }
