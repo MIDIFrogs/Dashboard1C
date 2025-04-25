@@ -6,10 +6,21 @@ using DashboardBackend.Data.Models;
 
 namespace DashboardBackend.Core
 {
-    public class ReportService(ISaleRepository saleRepository)
+    public class ReportService(IReportRepository reportRepository, ISaleRepository saleRepository)
     {
         public async Task UploadReportAsync(ReportDto reportDto)
         {
+            var report = await reportRepository.GetByIdAsync(reportDto.Id);
+            if (report == null)
+            {
+                report = new Report()
+                {
+                    Quarter = reportDto.Quarter,
+                    Year = reportDto.Year,
+                };
+                await reportRepository.AddAsync(report);
+            }
+
             // Create or update logic
             foreach (var saleDto in reportDto.Sales)
             {
@@ -27,7 +38,7 @@ namespace DashboardBackend.Core
                     var newSale = new Sale
                     {
                         ProductId = saleDto.ProductId,
-                        ReportId = reportDto.Id,
+                        ReportId = report.Id,
                         TargetAmount = saleDto.TargetAmount,
                         ActualSales = saleDto.ActualSales
                     };

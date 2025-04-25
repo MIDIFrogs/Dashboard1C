@@ -6,5 +6,6 @@ namespace DashboardBackend.Data.Access
 {
     public interface IReportRepository : IRepository<Report>
     {
+        Task<Report?> GetByDateAsync(int year, int quarter);
     }
 }

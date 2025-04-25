@@ -38,5 +38,10 @@ namespace DashboardBackend.Data.Access
                 await context.SaveChangesAsync();
             }
         }
+
+        public async Task<Report?> GetByDateAsync(int year, int quarter)
+        {
+            return await context.Reports.FirstOrDefaultAsync(r => r.Year == year && r.Quarter == quarter);
+        }
     }
 }

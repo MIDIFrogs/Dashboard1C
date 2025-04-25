@@ -31,6 +31,10 @@ namespace DashboardBackend.Data
                 .HasMany(rp => rp.Sales)
                 .WithOne(s => s.Report)
                 .HasForeignKey(s => s.ReportId);
+
+            modelBuilder.Entity<Report>()
+                .HasIndex(r => new { r.Year, r.Quarter })
+                .IsUnique();
         }
     }
 }
