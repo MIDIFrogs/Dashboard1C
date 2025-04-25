@@ -34,6 +34,7 @@ export default {
       default: '#00f2fe'
     }
   },
+  emits: ['toggleFullscreen'],
   setup(props) {
     const chartCanvas = ref(null)
     let chart = null
@@ -249,29 +250,29 @@ export default {
 
 <style scoped>
 .card {
-  background: var(--card-background);
-  border: var(--card-border);
-  border-radius: 12px;
-  padding: 16px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(10px);
-  overflow: hidden;
+  background: transparent;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  flex-shrink: 0;
+  padding-bottom: 16px;
 }
 
 .card-header h3 {
-  color: var(--text-primary);
   margin: 0;
+  color: var(--text-primary);
   font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.card-controls {
+  display: flex;
+  gap: 8px;
 }
 
 .control-btn {
@@ -291,13 +292,14 @@ export default {
 .control-btn:hover {
   background: var(--primary-color);
   color: var(--background-dark);
+  transform: scale(1.1);
 }
 
 .chart-container {
   flex: 1;
   position: relative;
   width: 100%;
-  min-height: 0; /* Important for flex container */
+  min-height: 0;
   overflow: hidden;
 }
 

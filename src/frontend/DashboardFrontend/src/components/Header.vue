@@ -61,7 +61,6 @@ export default {
   width: 100%;
   height: 70px;
   box-sizing: border-box;
-  max-width: 1400px;
   margin: 0 auto;
 }
 
