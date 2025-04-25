@@ -27,6 +27,7 @@ namespace DashboardBackend.Core
                     var newSale = new Sale
                     {
                         ProductId = saleDto.ProductId,
+                        ReportId = reportDto.Id,
                         TargetAmount = saleDto.TargetAmount,
                         ActualSales = saleDto.ActualSales
                     };
