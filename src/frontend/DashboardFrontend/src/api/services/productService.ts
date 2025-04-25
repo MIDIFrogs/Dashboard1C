@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import type { ProductGroup, ProductStats, PaginatedResponse, IProductService } from '../types';
+import type { ProductGroup, ProductStats, PaginatedResponse, IProductService } from '../models';
 
 // Interface for product service
 export interface IProductService {
@@ -146,7 +146,7 @@ export class MockProductService implements IProductService {
 function calculateGrowthRate(lastYearSales: any[], currentYearSales: any[]): number {
   const lastYearTotal = lastYearSales.reduce((sum, sale) => sum + sale.actualSales, 0);
   const currentYearTotal = currentYearSales.reduce((sum, sale) => sum + sale.actualSales, 0);
-  
+
   if (lastYearTotal === 0) return 0;
   return ((currentYearTotal - lastYearTotal) / lastYearTotal) * 100;
-} 
+}

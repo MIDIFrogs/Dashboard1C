@@ -1,5 +1,5 @@
 import { apiClient } from '../config';
-import type { Sale, SaleStats, PaginatedResponse } from '../types';
+import type { Sale, SaleStats, PaginatedResponse } from '../models';
 
 // Interface for sale service
 export interface ISaleService {
@@ -151,4 +151,4 @@ export class MockSaleService implements ISaleService {
   async getSalesByQuarter(year: number, quarter: number): Promise<Sale[]> {
     return this.mockSales.filter(s => s.year === year && s.quarter === quarter);
   }
-} 
+}

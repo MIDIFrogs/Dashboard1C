@@ -7,12 +7,12 @@
       {{ error }}
     </div>
     <div v-else class="categories-grid">
-      <div 
-        v-for="category in categoryStats" 
+      <div
+        v-for="category in categoryStats"
         :key="category.sector"
         class="category-card"
       >
-        <div 
+        <div
           class="category-header"
           @click="selectCategory(category.sector)"
         >
@@ -41,11 +41,11 @@
           @after-leave="endTransition"
         >
           <div class="products-grid" v-if="expandedCategory === category.sector">
-            <div 
-              v-for="product in category.products" 
+            <div
+              v-for="product in category.products"
               :key="product.id"
               class="product-card"
-              :class="{ 
+              :class="{
                 'status-danger': getProductStatus(product) === 'danger',
                 'status-success': getProductStatus(product) === 'success',
                 'is-expanded': expandedProduct === product.id
@@ -56,7 +56,7 @@
                 <h4>{{ product.name }}</h4>
                 <span class="expand-indicator">{{ expandedProduct === product.id ? '−' : '+' }}</span>
               </div>
-              
+
               <div class="product-stats" :class="{ 'expanded': expandedProduct === product.id }">
                 <div class="basic-stats">
                   <div class="stat-row">
@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { getServiceFactory } from '@/api/services';
-import type { Category, ProductGroup, Sale } from '@/api/types';
+import type { Category, ProductGroup, Sale } from '@/api/models';
 import type { AppliedFilters } from '@/api/types/filters';
 
 // Initialize services
@@ -141,10 +141,10 @@ onMounted(async () => {
 const loadCategories = async (filters?: AppliedFilters) => {
   isLoading.value = true;
   error.value = null;
-  
+
   try {
     let response;
-    
+
     if (filters && (filters.categoryIds.length || filters.productIds.length || filters.regionIds?.length)) {
       // Apply filters when loading categories
       activeFilters.value = { ...filters };
@@ -153,7 +153,7 @@ const loadCategories = async (filters?: AppliedFilters) => {
       // Load all categories if no filters
       response = await categoryService.getCategories(0, 50); // Get up to 50 categories
     }
-    
+
     categories.value = response.items;
     isLoading.value = false;
   } catch (e) {
@@ -167,7 +167,7 @@ const loadCategories = async (filters?: AppliedFilters) => {
 const applyFilters = async (filters: AppliedFilters) => {
   console.log('Applying filters to QuotationMap:', filters);
   await loadCategories(filters);
-  
+
   // Reset expanded states when filters change
   expandedCategory.value = null;
   expandedProduct.value = null;
@@ -181,7 +181,7 @@ const categoryStats = computed(() => {
   return categories.value.map(category => ({
     sector: category.name,
     products: category.products,
-    totalScore: category.products.reduce((sum, product) => 
+    totalScore: category.products.reduce((sum, product) =>
       sum + product.sales.reduce((salesSum, sale) => salesSum + sale.actualSales, 0), 0),
     avgCompletion: calculateAvgCompletion(category.products)
   }));
@@ -192,7 +192,7 @@ function calculateAvgCompletion(products: ProductGroup[]): number {
   const completionRates = products.flatMap(product =>
     product.sales.map(sale => (sale.actualSales / sale.targetAmount) * 100)
   );
-  
+
   if (completionRates.length === 0) return 0;
   return completionRates.reduce((sum, rate) => sum + rate, 0) / completionRates.length;
 }
@@ -200,7 +200,7 @@ function calculateAvgCompletion(products: ProductGroup[]): number {
 // Event handlers
 const selectCategory = async (sector: string) => {
   if (isTransitioning.value) return;
-  
+
   try {
     if (expandedCategory.value === sector) {
       expandedCategory.value = null;
@@ -538,10 +538,10 @@ function getMonthlyGrowth(product: ProductGroup): number {
   const currentYear = new Date().getFullYear();
   const currentYearSales = product.sales.filter(s => s.year === currentYear);
   const lastYearSales = product.sales.filter(s => s.year === currentYear - 1);
-  
+
   const currentTotal = currentYearSales.reduce((sum, sale) => sum + sale.actualSales, 0);
   const lastTotal = lastYearSales.reduce((sum, sale) => sum + sale.actualSales, 0);
-  
+
   return lastTotal ? ((currentTotal - lastTotal) / lastTotal) * 100 : 0;
 }
 
@@ -564,4 +564,4 @@ function getQuarterlyRevenue(product: ProductGroup, quarter: number): number {
   const quarterSales = product.sales.filter(s => s.year === currentYear && s.quarter === quarter);
   return quarterSales.reduce((sum, sale) => sum + sale.actualSales, 0);
 }
-</script> 
+</script>

@@ -1,14 +1,14 @@
 import { API_BASE_URL, apiClient } from '../config';
-import {
+import type {
   FilterCategory,
   FilterProduct,
-  FilterRegion, 
+  FilterRegion,
   DateRange,
   FilterOptions,
   NormalizedFilters,
-  AppliedFilters,
-  FilterServiceError
+  AppliedFilters
 } from '../types/filters';
+import { FilterServiceError } from '../types/filters';
 
 /**
  * Service for handling filter-related operations
@@ -100,8 +100,8 @@ export const filterService = {
    */
   normalizeFilters(filters: AppliedFilters): NormalizedFilters {
     // Convert string regions to numbers if needed
-    const regionIds = filters.regionIds || 
-      (filters.regions?.map(region => 
+    const regionIds = filters.regionIds ||
+      (filters.regions?.map(region =>
         typeof region === 'string' ? parseInt(region, 10) : region
       ) || []);
 
@@ -112,7 +112,7 @@ export const filterService = {
       categoryIds: filters.categoryIds || [],
       productIds: filters.productIds || [],
       regionIds: validRegionIds,
-      completionStatus: filters.completionStatus || 
+      completionStatus: filters.completionStatus ||
         (filters.completionStatuses?.[0] || 'all'),
       dateRange: filters.dateRange ? {
         start: new Date(filters.dateRange.start),
@@ -174,4 +174,4 @@ export const filterService = {
       ]
     };
   }
-}; 
+};

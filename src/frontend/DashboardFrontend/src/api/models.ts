@@ -69,4 +69,4 @@ export interface SaleStats {
   completionRate: number;
   timeCompliance: number;
   yearlyGrowth: number;
-} 
+}

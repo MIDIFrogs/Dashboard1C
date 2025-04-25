@@ -1,17 +1,17 @@
-import { CategoryService, MockCategoryService, ICategoryService } from './categoryService';
-import { ProductService, MockProductService, IProductService } from './productService';
-import { SaleService, MockSaleService, ISaleService } from './saleService';
+import { CategoryService, MockCategoryService, type ICategoryService } from './categoryService';
+import { ProductService, MockProductService, type IProductService } from './productService';
+import { SaleService, MockSaleService, type ISaleService } from './saleService';
 import { filterService } from './filterService';
-import { 
-  FilterOptions, 
-  AppliedFilters, 
+import type {
+  FilterOptions,
+  AppliedFilters,
   FilterCategory,
   FilterProduct,
   FilterRegion,
   DateRange,
-  NormalizedFilters,
-  FilterServiceError
+  NormalizedFilters
 } from '../types/filters';
+import { FilterServiceError } from '../types/filters';
 
 // Service factory interface
 export interface IServiceFactory {
@@ -106,4 +106,4 @@ export function getServiceFactory(useMock = false): IServiceFactory {
 
 // Export interfaces
 export type { ICategoryService, IProductService, ISaleService };
-export type { FilterOptions, AppliedFilters, FilterCategory, FilterProduct, FilterRegion, DateRange, NormalizedFilters, FilterServiceError }; 
+export type { FilterOptions, AppliedFilters, FilterCategory, FilterProduct, FilterRegion, DateRange, NormalizedFilters, FilterServiceError };

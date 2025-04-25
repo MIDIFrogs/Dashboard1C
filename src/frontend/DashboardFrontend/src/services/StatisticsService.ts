@@ -1,5 +1,5 @@
 import { getServiceFactory } from '@/api/services';
-import type { Category, ProductGroup, Sale, ProductStats } from '@/api/types';
+import type { Category, ProductGroup, Sale, ProductStats } from '@/api/models';
 
 export interface CategoryStatistics {
   sector: string;
@@ -29,7 +29,7 @@ class StatisticsService {
   private productDetailsCache: Map<number, ProductStats> = new Map();
   private loadingCategories: Set<string> = new Set();
   private loadingProducts: Set<number> = new Set();
-  private services = getServiceFactory(false);
+  private services = getServiceFactory(true);
 
   // Cache expiration time (30 minutes)
   private CACHE_EXPIRATION = 30 * 60 * 1000;
@@ -75,13 +75,13 @@ class StatisticsService {
     try {
       const categories = await this.services.categoryService.getCategories(0, 50);
       const category = categories.items.find(c => c.name === sector);
-      
+
       if (!category) {
         return null;
       }
 
       const products = await this.services.productService.getProductsByCategoryId(category.id);
-      
+
       // Load sales data for all products in parallel
       const salesPromises = products.map(async product => {
         const sales = await this.services.saleService.getSalesByProductId(product.id);
@@ -141,10 +141,10 @@ class StatisticsService {
 
       product.sales = sales;
       const stats = this.calculateProductStatistics(product, details);
-      
+
       this.productCache.set(productId, stats);
       this.productDetailsCache.set(productId, details);
-      
+
       return stats;
 
     } catch (error) {
@@ -158,11 +158,11 @@ class StatisticsService {
   private calculateProductStatistics(product: ProductGroup, details?: ProductStats): ProductStatistics {
     const currentYear = new Date().getFullYear();
     const sales = product.sales || [];
-    
+
     const totalSales = sales.reduce((sum, sale) => sum + sale.actualSales, 0);
     const totalTarget = sales.reduce((sum, sale) => sum + sale.targetAmount, 0);
     const completionRate = totalTarget ? (totalSales / totalTarget) * 100 : 0;
-    
+
     // Calculate quarterly revenue
     const quarterlyRevenue: Record<number, number> = {};
     for (let quarter = 1; quarter <= 4; quarter++) {
@@ -212,4 +212,4 @@ class StatisticsService {
 }
 
 // Export a singleton instance
-export const statisticsService = new StatisticsService(); 
+export const statisticsService = new StatisticsService();

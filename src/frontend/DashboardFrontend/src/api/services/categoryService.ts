@@ -1,5 +1,5 @@
 import { apiClient } from '../config';
-import type { Category, CategoryStats, PaginatedResponse } from '../types';
+import type { Category, CategoryStats, PaginatedResponse } from '../models';
 import type { AppliedFilters } from '../types/filters';
 
 // Interface for category service
@@ -48,11 +48,11 @@ export class CategoryService implements ICategoryService {
   async getCategoryStats(id: number): Promise<CategoryStats> {
     const category = await this.getCategory(id);
     return {
-      totalSales: category.products.reduce((sum, product) => 
+      totalSales: category.products.reduce((sum, product) =>
         sum + product.sales.reduce((salesSum, sale) => salesSum + sale.actualSales, 0), 0),
-      averageCompletion: category.products.reduce((sum, product) => 
-        sum + product.sales.reduce((completionSum, sale) => 
-          completionSum + (sale.actualSales / sale.targetAmount * 100), 0), 0) / 
+      averageCompletion: category.products.reduce((sum, product) =>
+        sum + product.sales.reduce((completionSum, sale) =>
+          completionSum + (sale.actualSales / sale.targetAmount * 100), 0), 0) /
         category.products.reduce((count, product) => count + product.sales.length, 0),
       productCount: category.products.length
     };
@@ -87,20 +87,20 @@ export class MockCategoryService implements ICategoryService {
 
   async getCategoriesFiltered(filters: AppliedFilters): Promise<PaginatedResponse<Category>> {
     console.log('Applying filters to categories:', filters);
-    
+
     // Filter the mock categories based on the provided filters
     let filteredCategories = [...this.mockCategories];
-    
+
     // Filter by category IDs if provided
     if (filters.categoryIds && filters.categoryIds.length > 0) {
-      filteredCategories = filteredCategories.filter(category => 
+      filteredCategories = filteredCategories.filter(category =>
         filters.categoryIds.includes(category.id)
       );
     }
-    
+
     // For a more complex implementation, we would also filter the products
     // within each category based on productIds in the filters
-    
+
     return {
       items: filteredCategories,
       total: filteredCategories.length,
@@ -144,4 +144,4 @@ export class MockCategoryService implements ICategoryService {
       productCount: 5
     };
   }
-} 
+}
