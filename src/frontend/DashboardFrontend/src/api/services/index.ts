@@ -1,5 +1,5 @@
 import { CategoryService, MockCategoryService, type ICategoryService } from './categoryService';
-import { ProductService, MockProductService, type IProductService } from './productService';
+import { ProductService, MockProductService } from './productService';
 import { SaleService, MockSaleService, type ISaleService } from './saleService';
 import { filterService } from './filterService';
 import type {
@@ -12,6 +12,7 @@ import type {
   NormalizedFilters
 } from '../types/filters';
 import { FilterServiceError } from '../types/filters';
+import { type IProductService } from '../models';
 
 // Service factory interface
 export interface IServiceFactory {

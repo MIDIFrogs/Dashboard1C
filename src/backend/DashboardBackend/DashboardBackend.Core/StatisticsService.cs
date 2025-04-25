@@ -20,22 +20,27 @@ namespace DashboardBackend.Core
             throw new NotImplementedException();
         }
 
-        public async Task<decimal> CalculatePointsAsync(Category category, int year, int quarter)
+        public async Task<decimal> CalculateCategoryPointsAsync(int categoryId, int year, int quarter)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<decimal> CalculateCompletionProgressAsync(ProductGroup product, int year, int quarter)
+        public async Task<decimal> CalculateProductCompletionProgressAsync(int productId, int year, int quarter)
+        {
+            var product = await productsRepository.GetByIdAsync(productId);
+            var report = await reportRepository.GetByDateAsync(year, quarter);
+            if (product == null)
+                return 0;
+            var sells = product.Sales.Where(sale => sale.Report == report);
+            return sells.Average(x => x.ActualSales / x.TargetAmount);
+        }
+
+        public async Task<int> CountCategoryCompletedAsync(int categoryId, int year, int quarter)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<int> CountCompletedAsync(Category category, int year, int quarter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<decimal> CalculateCompletionProgressAsync(Category category, int year, int quarter)
+        public async Task<decimal> CalculateCategoryCompletionProgressAsync(int categoryId, int year, int quarter)
         {
             throw new NotImplementedException();
         }

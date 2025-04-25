@@ -1,17 +1,6 @@
 import { apiClient } from './apiClient';
 import type { ProductGroup, ProductStats, PaginatedResponse, IProductService } from '../models';
 
-// Interface for product service
-export interface IProductService {
-  getProducts(skip?: number, take?: number): Promise<PaginatedResponse<ProductGroup>>;
-  getProduct(id: number): Promise<ProductGroup>;
-  createProduct(product: Omit<ProductGroup, 'id' | 'sales'>): Promise<ProductGroup>;
-  updateProduct(id: number, product: Omit<ProductGroup, 'sales'>): Promise<void>;
-  deleteProduct(id: number): Promise<void>;
-  getProductStats(id: number): Promise<ProductStats>;
-  getProductsByCategoryId(categoryId: number): Promise<ProductGroup[]>;
-}
-
 // Real implementation using API
 export class ProductService implements IProductService {
   async getProducts(skip = 0, take = 10): Promise<PaginatedResponse<ProductGroup>> {
@@ -124,16 +113,9 @@ export class MockProductService implements IProductService {
 
   async getProductStats(id: number): Promise<ProductStats> {
     return {
-      monthlyGrowth: 4.5,
+      id: id,
       marketShare: 15.3,
       rating: 4.2,
-      unitsSold: 12500,
-      quarterlyRevenue: {
-        q1: 68000,
-        q2: 82000,
-        q3: 75000,
-        q4: 90000
-      }
     };
   }
 
