@@ -91,22 +91,24 @@ export default {
   padding: 20px;
   height: 100%;
   backdrop-filter: blur(10px);
+  margin: 0;
 }
 
 h3 {
   color: var(--text-primary);
-  margin: 0 0 20px 0;
+  margin: 0;
   font-size: 1.2rem;
 }
 
 .notifications {
   height: calc(100% - 60px);
   overflow-y: auto;
+  margin: 0;
 }
 
 .notification-item {
   padding: 12px;
-  margin-bottom: 10px;
+  margin: 0 0 10px 0;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
@@ -115,12 +117,13 @@ h3 {
 .notification-content {
   display: flex;
   flex-direction: column;
+  margin: 0;
 }
 
 .notification-time {
   font-size: 0.8rem;
   color: var(--text-secondary);
-  margin-bottom: 4px;
+  margin: 0 0 4px 0;
 }
 
 .notification-item p {
