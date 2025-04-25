@@ -65,13 +65,11 @@ export class MockCategoryService implements ICategoryService {
     {
       id: 1,
       name: 'Technology',
-      weight: 2.5,
       products: []
     },
     {
       id: 2,
       name: 'Finance',
-      weight: 1.8,
       products: []
     }
   ];
