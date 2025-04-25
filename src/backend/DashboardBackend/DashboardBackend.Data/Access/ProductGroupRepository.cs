@@ -38,5 +38,10 @@ namespace DashboardBackend.Data.Access
                 await context.SaveChangesAsync();
             }
         }
+
+        public async Task<ProductGroup?> GetProductGroupByNameAsync(string name)
+        {
+            return await context.Products.FirstOrDefaultAsync(pg => pg.Name == name);
+        }
     }
 }

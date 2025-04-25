@@ -6,5 +6,6 @@ namespace DashboardBackend.Data.Access
 {
     public interface ICategoryRepository : IRepository<Category>
     {
+        Task<Category?> GetCategoryByNameAsync(string name);
     }
 }

@@ -35,6 +35,14 @@ namespace DashboardBackend.Data
             modelBuilder.Entity<Report>()
                 .HasIndex(r => new { r.Year, r.Quarter })
                 .IsUnique();
+
+            modelBuilder.Entity<Category>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<ProductGroup>()
+                .HasIndex(pg => pg.Name)
+                .IsUnique();
         }
     }
 }
