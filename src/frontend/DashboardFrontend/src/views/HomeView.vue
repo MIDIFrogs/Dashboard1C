@@ -16,7 +16,6 @@
       
       <div class="top-section-content">
         <div class="quotation-section">
-          <h3 class="subsection-title">Sales Quotation Map</h3>
           <div class="quotation-container">
             <QuotationMap 
               @product-selected="handleProductSelected" 
@@ -152,6 +151,16 @@
       </div>
     </div>
     
+    <!-- Sales Heatmap Section -->
+    <div class="heatmap-section">
+      <div class="section-header">
+        <h2 class="section-title">Regional Sales Intensity</h2>
+      </div>
+      <div class="heatmap-container">
+        <SalesHeatmap :filters="currentFilters" />
+      </div>
+    </div>
+    
     <!-- Filter popup component -->
     <FilterPopup ref="filterPopupRef" />
   </main>
@@ -160,7 +169,7 @@
   <Footer />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import Card from '../components/Card.vue';
 import QuotationMap from '../components/QuotationMap.vue';
@@ -168,30 +177,47 @@ import FilterPopup from '../components/FilterPopup.vue';
 import NotificationWindow from '../components/NotificationWindow.vue';
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
+import SalesHeatmap from '../components/SalesHeatmap.vue';
+import type { AppliedFilters } from '@/api/types';
 
 // Props
-const props = defineProps({
-  isProductView: {
-    type: Boolean,
-    default: false
-  }
-});
+interface Props {
+  isProductView?: boolean;
+}
+
+const props = defineProps<Props>();
 
 // Emits
-const emit = defineEmits(['return-to-general', 'product-selected']);
+interface Emits {
+  (e: 'return-to-general'): void;
+  (e: 'product-selected', product: any): void;
+}
+
+const emit = defineEmits<Emits>();
 
 // State
-const expandedCard = ref(null);
-const quotationKey = ref(0);
-const quotationMapRef = ref(null);
-const filterPopupRef = ref(null);
-const notificationsRef = ref(null);
-const updateInterval = ref(null);
-const selectedProduct = ref({
+const expandedCard = ref<number | null>(null);
+const quotationKey = ref<number>(0);
+const quotationMapRef = ref<any>(null);
+const filterPopupRef = ref<any>(null);
+const notificationsRef = ref<any>(null);
+const updateInterval = ref<number | null>(null);
+const selectedProduct = ref<{
+  id: number | null;
+  name: string;
+  category: string;
+  sku: string;
+}>({
   id: null,
   name: '',
   category: '',
   sku: ''
+});
+
+// Track current filters for components
+const currentFilters = ref<AppliedFilters>({
+  categoryIds: [],
+  productIds: []
 });
 
 // Update events to track
@@ -206,15 +232,15 @@ const updateEvents = [
 ];
 
 // Event handlers
-const returnToGeneral = () => {
+const returnToGeneral = (): void => {
   emit('return-to-general');
 };
 
-const toggleCardExpansion = (cardId) => {
+const toggleCardExpansion = (cardId: number): void => {
   expandedCard.value = expandedCard.value === cardId ? null : cardId;
 };
 
-const handleProductSelected = (product) => {
+const handleProductSelected = (product: any): void => {
   selectedProduct.value = product;
   emit('product-selected', product);
   
@@ -228,7 +254,7 @@ const handleProductSelected = (product) => {
 };
 
 // Generates a random update notification
-const getRandomUpdateMessage = () => {
+const getRandomUpdateMessage = (): string => {
   // Get random index
   const index = Math.floor(Math.random() * updateEvents.length);
   return updateEvents[index];
@@ -257,7 +283,7 @@ onUnmounted(() => {
 });
 
 // Start sending periodic updates for notifications
-const startPeriodicUpdates = () => {
+const startPeriodicUpdates = (): void => {
   // Generate an initial update
   generateUpdate();
   
@@ -268,7 +294,7 @@ const startPeriodicUpdates = () => {
 };
 
 // Generate an update and notify components
-const generateUpdate = () => {
+const generateUpdate = (): void => {
   // Create update message
   const updateMessage = getRandomUpdateMessage();
   
@@ -282,7 +308,7 @@ const generateUpdate = () => {
 };
 
 // Refresh dashboard data
-const refreshData = async () => {
+const refreshData = async (): Promise<void> => {
   // Increment key to force re-render of QuotationMap
   quotationKey.value++;
   
@@ -291,7 +317,10 @@ const refreshData = async () => {
 };
 
 // Handle filter updates
-const handleFiltersUpdated = (event) => {
+const handleFiltersUpdated = (event: CustomEvent): void => {
+  // Store the current filters
+  currentFilters.value = event.detail;
+  
   if (quotationMapRef.value) {
     // Apply filters to quotation map
     quotationMapRef.value.applyFilters(event.detail);
@@ -509,5 +538,30 @@ h2 {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.heatmap-container {
+  height: 400px;
+  width: 100%;
+  background-color: #1a2233; /* Dark background to make the map visible */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.heatmap-section {
+  margin-top: 2rem;
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  border: var(--card-border);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  min-height: 450px; /* Ensure there's enough space */
+  padding-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .heatmap-container {
+    height: 300px;
+  }
 }
 </style>

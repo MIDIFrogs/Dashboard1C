@@ -1,5 +1,6 @@
 import { apiClient } from '../config';
 import type { Sale, SaleStats, PaginatedResponse } from '../models';
+import type { AppliedFilters } from '../types';
 
 // Interface for sale service
 export interface ISaleService {
@@ -12,6 +13,7 @@ export interface ISaleService {
   getSalesByProductId(productId: number): Promise<Sale[]>;
   getSalesByYear(year: number): Promise<Sale[]>;
   getSalesByQuarter(year: number, quarter: number): Promise<Sale[]>;
+  getSalesFiltered(filters: AppliedFilters): Promise<Sale[]>;
 }
 
 // Real implementation using API
@@ -71,6 +73,16 @@ export class SaleService implements ISaleService {
   async getSalesByQuarter(year: number, quarter: number): Promise<Sale[]> {
     const response = await apiClient.get<Sale[]>(`/sales?year=${year}&quarter=${quarter}`);
     return response.data;
+  }
+
+  async getSalesFiltered(filters: AppliedFilters): Promise<Sale[]> {
+    try {
+      const response = await apiClient.post<Sale[]>('/api/sales/filter', filters);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch filtered sales:', error);
+      throw error;
+    }
   }
 }
 
@@ -150,5 +162,27 @@ export class MockSaleService implements ISaleService {
 
   async getSalesByQuarter(year: number, quarter: number): Promise<Sale[]> {
     return this.mockSales.filter(s => s.year === year && s.quarter === quarter);
+  }
+
+  async getSalesFiltered(filters: AppliedFilters): Promise<Sale[]> {
+    let filteredSales = [...this.mockSales];
+    
+    if (filters.productIds && filters.productIds.length > 0) {
+      filteredSales = filteredSales.filter(sale => 
+        filters.productIds.includes(sale.productId)
+      );
+    }
+    
+    if (filters.dateRange) {
+      const startDate = new Date(filters.dateRange.start);
+      const endDate = new Date(filters.dateRange.end);
+      
+      filteredSales = filteredSales.filter(sale => {
+        const saleDate = new Date(sale.year, (sale.quarter - 1) * 3, 1);
+        return saleDate >= startDate && saleDate <= endDate;
+      });
+    }
+    
+    return filteredSales;
   }
 }

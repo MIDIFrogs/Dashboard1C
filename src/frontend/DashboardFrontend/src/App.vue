@@ -59,4 +59,22 @@ html, body {
   color: var(--text-primary);
   overflow-x: hidden;
 }
+
+.card-container {
+  position: relative;
+  background-color: #303030;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  will-change: transform, opacity, box-shadow;
+  height: 250px; /* Reduced from original height */
+  width: 100%;
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+}
 </style>
