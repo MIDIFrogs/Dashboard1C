@@ -1,47 +1,50 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
+import Card from './components/Card.vue'
+import QuotationMap from './components/QuotationMap.vue'
+import NotificationWindow from './components/NotificationWindow.vue'
+import ReportPopup from './components/ReportPopup.vue'
+import FilterPopup from './components/FilterPopup.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
+  <Header />
 
   <main>
-    <TheWelcome />
+    <div class="static-cards">
+      <QuotationMap />
+      <NotificationWindow />
+    </div>
+    <div class="dynamic-cards">
+      <Card title="Card 1" />
+      <Card title="Card 2" />
+      <!-- Add more cards as needed -->
+    </div>
   </main>
+
+  <ReportPopup />
+  <FilterPopup />
+  <Footer />
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
 }
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.static-cards {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
 }
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.dynamic-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
 }
 </style>
