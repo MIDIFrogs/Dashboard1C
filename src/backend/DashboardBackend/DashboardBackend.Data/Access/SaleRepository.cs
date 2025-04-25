@@ -14,7 +14,7 @@ namespace DashboardBackend.Data.Access
 
         public async Task<Sale?> GetByIdAsync(int saleId)
         {
-            return await context.Sales.Include(s => s.Product).FirstOrDefaultAsync(s => s.SaleId == saleId);
+            return await context.Sales.Include(s => s.Product).FirstOrDefaultAsync(s => s.Id == saleId);
         }
 
         public async Task AddAsync(Sale sale)

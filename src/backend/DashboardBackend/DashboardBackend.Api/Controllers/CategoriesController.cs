@@ -1,4 +1,4 @@
-﻿using DashboardBackend.Api.Transfer;
+﻿using DashboardBackend.Core.Transfer;
 using DashboardBackend.Data.Access;
 using DashboardBackend.Data.Models;
 using Microsoft.AspNetCore.Mvc;

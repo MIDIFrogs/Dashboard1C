@@ -13,6 +13,8 @@ namespace DashboardBackend.Data
 
         public DbSet<Sale> Sales { get; set; }
 
+        public DbSet<Report> Reports { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Category>()
@@ -24,6 +26,11 @@ namespace DashboardBackend.Data
                 .HasMany(pg => pg.Sales)
                 .WithOne(s => s.Product)
                 .HasForeignKey(s => s.ProductId);
+
+            modelBuilder.Entity<Report>()
+                .HasMany(rp => rp.Sales)
+                .WithOne(s => s.Report)
+                .HasForeignKey(s => s.ReportId);
         }
     }
 }
