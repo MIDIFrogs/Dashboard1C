@@ -3,12 +3,14 @@ export interface Category {
   id: number;
   name: string;
   products: ProductGroup[];
+  weight: number; // Category weight for points calculation
 }
 
 export interface ProductGroup {
   id: number;
   name: string;
   categoryId: number;
+  region: string; // Region where the product is sold
   sales: Sale[];
 }
 
