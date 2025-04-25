@@ -1,4 +1,4 @@
-namespace DashboardBackend
+namespace DashboardBackend.Api
 {
     public class WeatherForecast
     {

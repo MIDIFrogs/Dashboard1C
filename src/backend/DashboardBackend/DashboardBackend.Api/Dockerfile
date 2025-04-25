@@ -12,19 +12,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["DashboardBackend/DashboardBackend.csproj", "DashboardBackend/"]
-RUN dotnet restore "./DashboardBackend/DashboardBackend.csproj"
+COPY ["DashboardBackend.Api/DashboardBackend.Api.csproj", "DashboardBackend.Api/"]
+RUN dotnet restore "./DashboardBackend.Api/DashboardBackend.Api.csproj"
 COPY . .
-WORKDIR "/src/DashboardBackend"
-RUN dotnet build "./DashboardBackend.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/DashboardBackend.Api"
+RUN dotnet build "./DashboardBackend.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./DashboardBackend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./DashboardBackend.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "DashboardBackend.dll"]
+ENTRYPOINT ["dotnet", "DashboardBackend.Api.dll"]

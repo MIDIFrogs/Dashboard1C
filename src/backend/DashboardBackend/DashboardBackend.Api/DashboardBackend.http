@@ -1,0 +1,136 @@
+@DashboardBackend_Api_HostAddress = http://localhost:5189
+
+### Sales API
+
+# Get all sales with pagination
+GET {{DashboardBackend_Api_HostAddress}}/sales?skip=0&take=10
+Accept: application/json
+
+###
+
+# Get a specific sale by ID
+GET {{DashboardBackend_Api_HostAddress}}/sales/1
+Accept: application/json
+
+###
+
+# Create a new sale
+POST {{DashboardBackend_Api_HostAddress}}/sales
+Content-Type: application/json
+
+{
+    "year": 2023,
+    "quarter": 1,
+    "productId": 1,
+    "targetAmount": 1000,
+    "actualSales": 800
+}
+
+###
+
+# Update an existing sale
+PUT {{DashboardBackend_Api_HostAddress}}/sales/1
+Content-Type: application/json
+
+{
+    "saleId": 1,
+    "year": 2023,
+    "quarter": 1,
+    "productId": 1,
+    "targetAmount": 1200,
+    "actualSales": 900
+}
+
+###
+
+# Delete a sale by ID
+DELETE {{DashboardBackend_Api_HostAddress}}/sales/1
+Accept: application/json
+
+###
+
+### Categories API
+
+# Get all categories with pagination
+GET {{DashboardBackend_Api_HostAddress}}/categories?skip=0&take=10
+Accept: application/json
+
+###
+
+# Get a specific category by ID
+GET {{DashboardBackend_Api_HostAddress}}/categories/1
+Accept: application/json
+
+###
+
+# Create a new category
+POST {{DashboardBackend_Api_HostAddress}}/categories
+Content-Type: application/json
+
+{
+    "name": "New Category",
+    "weight": 1.5
+}
+
+###
+
+# Update an existing category
+PUT {{DashboardBackend_Api_HostAddress}}/categories/1
+Content-Type: application/json
+
+{
+    "id": 1,
+    "name": "Updated Category",
+    "weight": 2.0
+}
+
+###
+
+# Delete a category by ID
+DELETE {{DashboardBackend_Api_HostAddress}}/categories/1
+Accept: application/json
+
+###
+
+### Products API
+
+# Get all product groups with pagination
+GET {{DashboardBackend_Api_HostAddress}}/products?skip=0&take=10
+Accept: application/json
+
+###
+
+# Get a specific product group by ID
+GET {{DashboardBackend_Api_HostAddress}}/products/1
+Accept: application/json
+
+###
+
+# Create a new product group
+POST {{DashboardBackend_Api_HostAddress}}/products
+Content-Type: application/json
+
+{
+    "name": "New Product Group",
+    "categoryId": 1
+}
+
+###
+
+# Update an existing product group
+PUT {{DashboardBackend_Api_HostAddress}}/products/1
+Content-Type: application/json
+
+{
+    "id": 1,
+    "name": "Updated Product Group",
+    "categoryId": 2
+}
+
+###
+
+# Delete a product group by ID
+DELETE {{DashboardBackend_Api_HostAddress}}/products/1
+Accept: application/json
+
+###
