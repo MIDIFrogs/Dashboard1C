@@ -499,4 +499,55 @@ button:hover::after {
 .modal-leave-to {
   opacity: 0;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
+    height: 60px;
+  }
+
+  .nav-buttons {
+    gap: 12px;
+  }
+
+  button {
+    padding: 8px;
+    transform: scale(0.9);
+  }
+
+  button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .logo {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 0 12px;
+    height: 50px;
+  }
+
+  .nav-buttons {
+    gap: 8px;
+  }
+
+  button {
+    padding: 6px;
+    transform: scale(0.85);
+  }
+
+  button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+}
 </style> 
