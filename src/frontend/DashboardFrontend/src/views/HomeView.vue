@@ -356,13 +356,13 @@ h2 {
 }
 
 .top-section {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1rem;
   width: 100%;
   display: block;
 }
 
 .analytics-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   width: 100%;
   display: block;
 }
@@ -392,10 +392,10 @@ h2 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-auto-rows: minmax(300px, auto);
-  gap: 1.5rem;
+  gap: 1rem;
   width: 100%;
-  margin-bottom: 2rem;
-  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
 }
 
 /* Define styles for product-specific grid layout */
@@ -406,9 +406,9 @@ h2 {
 
 /* Ensure dashboard content fills available space */
 .dashboard-content {
-  padding: 32px;
-  max-width: 1440px;
-  margin: 0 auto;
+  padding: 16px;
+  max-width: 100%;
+  margin: 0;
   display: flex;
   flex-direction: column;
   width: 100%;

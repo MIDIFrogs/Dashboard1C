@@ -1,6 +1,7 @@
 import { apiClient } from '../config';
 import type { Category, CategoryStats, PaginatedResponse } from '../models';
 import type { AppliedFilters } from '../types/filters';
+import { mockCategories } from '../mockData';
 
 // Interface for category service
 export interface ICategoryService {
@@ -15,16 +16,42 @@ export interface ICategoryService {
 
 // Real implementation using API
 export class CategoryService implements ICategoryService {
-  async getCategories(page: number, pageSize: number): Promise<PaginatedResponse<Category>> {
-    const response = await apiClient.get<PaginatedResponse<Category>>('/api/categories', {
-      params: { page, pageSize }
-    });
-    return response.data;
+  async getCategories(skip: number = 0, take: number = 10): Promise<PaginatedResponse<Category>> {
+    // Return paginated mock categories
+    const start = skip;
+    const end = Math.min(skip + take, mockCategories.length);
+    return {
+      items: mockCategories.slice(start, end),
+      total: mockCategories.length,
+      page: Math.floor(skip / take) + 1,
+      pageSize: take
+    };
   }
 
   async getCategoriesFiltered(filters: AppliedFilters): Promise<PaginatedResponse<Category>> {
-    const response = await apiClient.post<PaginatedResponse<Category>>('/api/categories/filter', filters);
-    return response.data;
+    let filteredCategories = [...mockCategories];
+
+    if (filters.categoryIds?.length) {
+      filteredCategories = filteredCategories.filter(cat => 
+        filters.categoryIds.includes(cat.id)
+      );
+    }
+
+    if (filters.productIds?.length) {
+      filteredCategories = filteredCategories.map(cat => ({
+        ...cat,
+        products: cat.products.filter(prod => 
+          filters.productIds.includes(prod.id)
+        )
+      })).filter(cat => cat.products.length > 0);
+    }
+
+    return {
+      items: filteredCategories,
+      total: filteredCategories.length,
+      page: 1,
+      pageSize: filteredCategories.length
+    };
   }
 
   async getCategory(id: number): Promise<Category> {
@@ -61,25 +88,11 @@ export class CategoryService implements ICategoryService {
 
 // Mock implementation for development/testing
 export class MockCategoryService implements ICategoryService {
-  private mockCategories: Category[] = [
-    {
-      id: 1,
-      name: 'Technology',
-      weight: 2.5,
-      products: []
-    },
-    {
-      id: 2,
-      name: 'Finance',
-      weight: 1.8,
-      products: []
-    }
-  ];
 
   async getCategories(skip = 0, take = 10): Promise<PaginatedResponse<Category>> {
     return {
-      items: this.mockCategories.slice(skip, skip + take),
-      total: this.mockCategories.length,
+      items: mockCategories.slice(skip, skip + take),
+      total: mockCategories.length,
       page: Math.floor(skip / take) + 1,
       pageSize: take
     };
@@ -89,7 +102,7 @@ export class MockCategoryService implements ICategoryService {
     console.log('Applying filters to categories:', filters);
 
     // Filter the mock categories based on the provided filters
-    let filteredCategories = [...this.mockCategories];
+    let filteredCategories = [...mockCategories];
 
     // Filter by category IDs if provided
     if (filters.categoryIds && filters.categoryIds.length > 0) {
@@ -110,7 +123,7 @@ export class MockCategoryService implements ICategoryService {
   }
 
   async getCategory(id: number): Promise<Category> {
-    const category = this.mockCategories.find(c => c.id === id);
+    const category = mockCategories.find(c => c.id === id);
     if (!category) throw new Error('Category not found');
     return category;
   }
@@ -118,23 +131,23 @@ export class MockCategoryService implements ICategoryService {
   async createCategory(category: Omit<Category, 'id' | 'products'>): Promise<Category> {
     const newCategory = {
       ...category,
-      id: this.mockCategories.length + 1,
+      id: mockCategories.length + 1,
       products: []
     };
-    this.mockCategories.push(newCategory);
+    mockCategories.push(newCategory);
     return newCategory;
   }
 
   async updateCategory(id: number, category: Omit<Category, 'products'>): Promise<void> {
-    const index = this.mockCategories.findIndex(c => c.id === id);
+    const index = mockCategories.findIndex(c => c.id === id);
     if (index === -1) throw new Error('Category not found');
-    this.mockCategories[index] = { ...this.mockCategories[index], ...category };
+    mockCategories[index] = { ...mockCategories[index], ...category };
   }
 
   async deleteCategory(id: number): Promise<void> {
-    const index = this.mockCategories.findIndex(c => c.id === id);
+    const index = mockCategories.findIndex(c => c.id === id);
     if (index === -1) throw new Error('Category not found');
-    this.mockCategories.splice(index, 1);
+    mockCategories.splice(index, 1);
   }
 
   async getCategoryStats(id: number): Promise<CategoryStats> {

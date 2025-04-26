@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient';
 import type { ProductGroup, ProductStats, PaginatedResponse, IProductService } from '../models';
+import { mockCategories } from '../mockData';
 
 // Interface for product service
 export interface IProductService {
@@ -47,24 +48,32 @@ export class ProductService implements IProductService {
     await apiClient.delete(`/products/${id}`);
   }
 
-  async getProductStats(id: number): Promise<ProductStats> {
-    try {
-      const response = await apiClient.get<ProductStats>(`/api/products/${id}/stats`);
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch stats for product ${id}:`, error);
-      throw error;
+  async getProductStats(productId: number): Promise<ProductStats> {
+    // Find the product in mock data
+    const product = mockCategories
+      .flatMap(cat => cat.products)
+      .find(prod => prod.id === productId);
+
+    if (!product) {
+      throw new Error('Product not found');
     }
+
+    // Calculate stats from sales data
+    const totalSales = product.sales.reduce((sum, sale) => sum + sale.actualSales, 0);
+    const totalTarget = product.sales.reduce((sum, sale) => sum + sale.targetAmount, 0);
+    const completion = totalTarget ? (totalSales / totalTarget) * 100 : 0;
+
+    // Generate mock stats
+    return {
+      id: product.id,
+      marketShare: 15 + Math.random() * 10,
+      rating: 3.5 + Math.random() * 1.5,
+    };
   }
 
   async getProductsByCategoryId(categoryId: number): Promise<ProductGroup[]> {
-    try {
-      const response = await apiClient.get<ProductGroup[]>(`/api/categories/${categoryId}/products`);
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch products for category ${categoryId}:`, error);
-      throw error;
-    }
+    const category = mockCategories.find(cat => cat.id === categoryId);
+    return category?.products || [];
   }
 }
 

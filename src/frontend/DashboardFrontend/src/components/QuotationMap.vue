@@ -9,7 +9,11 @@
     <div v-else-if="error" class="error-state">
       {{ error }}
     </div>
-    <div v-else class="categories-grid">
+    <div
+      v-else
+      class="categories-grid"
+      ref="categoriesGridRef"
+    >
       <div
         v-for="category in categoryStats"
         :key="category.sector"
@@ -114,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { getServiceFactory } from '@/api/services';
 import type { Category, ProductGroup, Sale } from '@/api/models';
 import type { AppliedFilters } from '@/api/types/filters';
@@ -134,6 +138,23 @@ const activeFilters = ref<AppliedFilters>({
   categoryIds: [],
   productIds: []
 });
+
+// Modify container sizing logic
+const categoriesGridRef = ref<HTMLElement | null>(null);
+
+// Modify the watch to only handle expansion state
+watch([expandedCategory, expandedProduct], async () => {
+  if (!categoriesGridRef.value) return;
+  
+  // Wait for DOM updates
+  await nextTick();
+  
+  // Scroll expanded card into view if needed
+  if (expandedProduct.value) {
+    const expandedCard = categoriesGridRef.value.querySelector('.product-card.is-expanded');
+    expandedCard?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}, { immediate: true });
 
 // Load initial data
 onMounted(async () => {
@@ -185,7 +206,7 @@ const categoryStats = computed(() => {
     sector: category.name,
     products: category.products,
     totalScore: category.products.reduce((sum, product) =>
-      sum + product.sales.reduce((salesSum, sale) => salesSum + sale.actualSales, 0), 0),
+      sum + product.sales[product.sales.length - 1].actualSales, 0),
     avgCompletion: calculateAvgCompletion(category.products)
   }));
 });
@@ -262,7 +283,7 @@ const endTransition = (el: Element): void => {
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto; /* Allow the main container to scroll */
 }
 
 .quotation-map-title {
@@ -280,13 +301,15 @@ const endTransition = (el: Element): void => {
 }
 
 .categories-grid {
-  overflow-y: auto;
   padding: 0.5rem;
-  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   align-items: start;
+  position: relative;
+  min-height: min-content;
+  height: fit-content;
+  width: 100%;
 }
 
 .category-card {
@@ -298,6 +321,8 @@ const endTransition = (el: Element): void => {
   display: flex;
   flex-direction: column;
   min-height: 140px;
+  position: relative;
+  height: fit-content;
 }
 
 .category-card:hover {
@@ -352,29 +377,31 @@ const endTransition = (el: Element): void => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
-  grid-column: 1 / -1;
   width: 100%;
+  position: relative;
+  z-index: 10;
+  height: fit-content;
 }
 
 /* Expand transition */
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: top;
-  overflow: hidden;
+  position: relative;
+  z-index: 1000;
+  overflow: visible;
 }
 
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  max-height: 0;
   transform: scaleY(0);
 }
 
 .expand-enter-to,
 .expand-leave-from {
   opacity: 1;
-  max-height: 1000px;
   transform: scaleY(1);
 }
 
@@ -387,6 +414,7 @@ const endTransition = (el: Element): void => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .product-card:hover {
@@ -396,6 +424,10 @@ const endTransition = (el: Element): void => {
 
 .product-card.is-expanded {
   grid-column: span 2;
+  z-index: 20;
+  background: var(--card-background);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .product-header {
@@ -489,18 +521,9 @@ const endTransition = (el: Element): void => {
   }
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 3px;
+/* Ensure the container for scrolling has proper overflow handling */
+.quotation-map > :not(.quotation-map-title) {
+  overflow: visible;
 }
 
 /* Fade transition */
@@ -528,6 +551,26 @@ const endTransition = (el: Element): void => {
 .error-state {
   color: #f44336;
 }
+
+/* Add custom scrollbar only to the main content area */
+.quotation-map {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) rgba(255, 255, 255, 0.1);
+}
+
+.quotation-map::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quotation-map::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.quotation-map::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
 </style>
 
 <script lang="ts">
@@ -541,7 +584,7 @@ function getProductStatus(product: ProductGroup): 'danger' | 'success' | null {
 }
 
 function getTotalSales(product: ProductGroup): number {
-  return product.sales.reduce((sum, sale) => sum + sale.actualSales, 0);
+  return product.sales[product.sales.length - 1].actualSales;
 }
 
 function getCompletionRate(product: ProductGroup): number {
