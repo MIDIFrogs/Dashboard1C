@@ -68,6 +68,9 @@ export class ProductService implements IProductService {
       id: product.id,
       marketShare: 15 + Math.random() * 10,
       rating: 3.5 + Math.random() * 1.5,
+      salesCompletion: completion,
+      deliveryPerformance: 85 + Math.random() * 15,
+      growthRate: -5 + Math.random() * 15
     };
   }
 

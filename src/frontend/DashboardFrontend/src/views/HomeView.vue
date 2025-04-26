@@ -41,111 +41,46 @@
         <!-- Grid layout will be different based on if we're in product view or general view -->
         <template v-if="!isProductView">
           <!-- General dashboard view -->
-          <Card 
-            title="Sales Distribution by Category" 
-            type="pie" 
-            color="#00f2fe"
-            :expanded="expandedCard === 1"
-            @toggleFullscreen="toggleCardExpansion(1)"
-          />
-          <Card 
-            title="Monthly Sales History" 
-            type="histogram" 
-            color="#00b09b"
-            :expanded="expandedCard === 2"
-            @toggleFullscreen="toggleCardExpansion(2)"
-          />
-          <Card 
-            title="Sales Plan Achievement" 
-            type="radar" 
-            color="#fc466b"
-            :expanded="expandedCard === 3"
-            @toggleFullscreen="toggleCardExpansion(3)"
-          />
-          <Card 
-            title="Growth Trend Analysis" 
-            type="line" 
-            color="#ffd166"
-            :expanded="expandedCard === 4"
-            @toggleFullscreen="toggleCardExpansion(4)"
-          />
-          <Card 
-            title="YoY Category Comparison" 
-            type="bar" 
-            color="#ef476f"
-            :expanded="expandedCard === 5"
-            @toggleFullscreen="toggleCardExpansion(5)"
-          />
-          <Card 
-            title="Target vs Actual Sales" 
-            type="area" 
-            color="#06d6a0"
-            :expanded="expandedCard === 6"
-            @toggleFullscreen="toggleCardExpansion(6)"
+          <Card
+            v-for="(card, index) in cards"
+            :key="index"
+            :title="card.title"
+            :type="card.type"
+            :color="card.color"
+            :expanded="expandedCard === index + 1"
+            :isDragging="draggedCard === index"
+            :isDragOver="hoveredCardId === index"
+            @toggleFullscreen="toggleCardExpansion(index + 1)"
+            @dragStart="(e) => handleDragStart(index, e)"
+            @dragEnd="handleDragEnd"
+            @dragEnter="handleDragEnter"
+            @dragLeave="handleDragLeave"
+            @dragOver="handleDragOver"
+            @drop="(e) => handleDrop(index, e)"
           />
         </template>
         
         <template v-else>
           <!-- Product specific dashboard -->
-          <Card 
-            title="Monthly Sales History" 
-            type="histogram" 
-            color="#00b09b"
+          <Card
+            v-for="(card, index) in cards"
+            :key="index"
+            :title="card.title"
+            :type="card.type"
+            :color="card.color"
             :isProductView="true"
             :productId="selectedProduct.id"
             :productName="selectedProduct.name"
-            :expanded="expandedCard === 1"
-            @toggleFullscreen="toggleCardExpansion(1)"
-          />
-          <Card 
-            title="Quarterly Sales Distribution" 
-            type="radar" 
-            color="#fc466b"
-            :isProductView="true"
-            :productId="selectedProduct.id"
-            :productName="selectedProduct.name"
-            :expanded="expandedCard === 2"
-            @toggleFullscreen="toggleCardExpansion(2)"
-          />
-          <Card 
-            title="Target Achievement" 
-            type="pie" 
-            color="#00f2fe"
-            :isProductView="true"
-            :productId="selectedProduct.id"
-            :productName="selectedProduct.name"
-            :expanded="expandedCard === 3"
-            @toggleFullscreen="toggleCardExpansion(3)"
-          />
-          <Card 
-            title="Customer Segments" 
-            type="line" 
-            color="#ffd166"
-            :isProductView="true"
-            :productId="selectedProduct.id"
-            :productName="selectedProduct.name"
-            :expanded="expandedCard === 4"
-            @toggleFullscreen="toggleCardExpansion(4)"
-          />
-          <Card 
-            title="Regional Distribution" 
-            type="bar" 
-            color="#ef476f"
-            :isProductView="true"
-            :productId="selectedProduct.id"
-            :productName="selectedProduct.name"
-            :expanded="expandedCard === 5"
-            @toggleFullscreen="toggleCardExpansion(5)"
-          />
-          <Card 
-            title="Growth Trend" 
-            type="area" 
-            color="#06d6a0"
-            :isProductView="true"
-            :productId="selectedProduct.id"
-            :productName="selectedProduct.name"
-            :expanded="expandedCard === 6"
-            @toggleFullscreen="toggleCardExpansion(6)"
+            :expanded="expandedCard === index + 1"
+            :isDragging="draggedCard === index"
+            :isDragOver="hoveredCardId === index"
+            @toggleFullscreen="toggleCardExpansion(index + 1)"
+            @dragStart="(e) => handleDragStart(index, e)"
+            @dragEnd="handleDragEnd"
+            @dragEnter="handleDragEnter"
+            @dragLeave="handleDragLeave"
+            @dragOver="handleDragOver"
+            @drop="(e) => handleDrop(index, e)"
           />
         </template>
       </div>
@@ -178,7 +113,7 @@ import NotificationWindow from '../components/NotificationWindow.vue';
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
 import SalesHeatmap from '../components/SalesHeatmap.vue';
-import type { AppliedFilters } from '@/api/types';
+import type { AppliedFilters } from '../api/types';
 
 // Props
 interface Props {
@@ -203,12 +138,12 @@ const filterPopupRef = ref<any>(null);
 const notificationsRef = ref<any>(null);
 const updateInterval = ref<number | null>(null);
 const selectedProduct = ref<{
-  id: number | null;
+  id: number | undefined;
   name: string;
   category: string;
   sku: string;
 }>({
-  id: null,
+  id: undefined,
   name: '',
   category: '',
   sku: ''
@@ -230,6 +165,27 @@ const updateEvents = [
   'Category analysis completed',
   'Target achievement metrics updated'
 ];
+
+// Add these refs after other refs in the script setup section
+const draggedCard = ref<number | null>(null);
+const draggedIndex = ref<number | null>(null);
+const hoveredCardId = ref<number | null>(null);
+
+// Add cards state
+const cards = ref(!props.isProductView ? [
+  { title: "Sales Distribution by Category", type: "pie", color: "#00f2fe" },
+  { title: "Monthly Sales History", type: "histogram", color: "#00b09b" },
+  { title: "Sales Plan Achievement", type: "radar", color: "#fc466b" },
+  { title: "YoY Category Comparison", type: "bar", color: "#ef476f" },
+  { title: "Target vs Actual Sales", type: "area", color: "#06d6a0" }
+] : [
+  { title: "Monthly Sales History", type: "histogram", color: "#00b09b" },
+  { title: "Quarterly Sales Distribution", type: "radar", color: "#fc466b" },
+  { title: "Target Achievement", type: "pie", color: "#00f2fe" },
+  { title: "Category Distribution", type: "categoryDistribution", color: "#ffd166" },
+  { title: "Regional Distribution", type: "bar", color: "#ef476f" },
+  { title: "Target vs Actual Sales", type: "area", color: "#06d6a0" }
+]);
 
 // Event handlers
 const returnToGeneral = (): void => {
@@ -260,23 +216,23 @@ const getRandomUpdateMessage = (): string => {
   return updateEvents[index];
 };
 
-// Event listeners for data updates
+// Create a type-safe event handler
+const filtersUpdatedHandler = ((event: Event) => {
+  if (event instanceof CustomEvent) {
+    handleFiltersUpdated(event);
+  }
+}) as EventListener;
+
+// Update event listeners
 onMounted(() => {
-  // Listen for data-updated events from various components
   window.addEventListener('data-updated', refreshData);
-  
-  // Listen for filter updates
-  window.addEventListener('filters-updated', handleFiltersUpdated);
-  
-  // Start sending periodic updates for notifications
+  window.addEventListener('filters-updated', filtersUpdatedHandler);
   startPeriodicUpdates();
 });
 
 onUnmounted(() => {
   window.removeEventListener('data-updated', refreshData);
-  window.removeEventListener('filters-updated', handleFiltersUpdated);
-  
-  // Clear update interval when component unmounts
+  window.removeEventListener('filters-updated', filtersUpdatedHandler);
   if (updateInterval.value) {
     clearInterval(updateInterval.value);
   }
@@ -337,6 +293,43 @@ const handleFiltersUpdated = (event: CustomEvent): void => {
   // Refresh the chart data
   refreshData();
 };
+
+// Add these methods after other methods in the script setup section
+const handleDragStart = (index: number, event: DragEvent) => {
+  draggedCard.value = index;
+  draggedIndex.value = index;
+};
+
+const handleDragEnd = () => {
+  draggedCard.value = null;
+  draggedIndex.value = null;
+};
+
+const handleDragEnter = (event: DragEvent) => {
+  event.preventDefault();
+};
+
+const handleDragLeave = (event: DragEvent) => {
+  event.preventDefault();
+};
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault();
+};
+
+const handleDrop = (targetIndex: number, event: Event) => {
+  event.preventDefault();
+  
+  if (draggedIndex.value === null || draggedIndex.value === targetIndex) return;
+
+  // Swap cards in the reactive array
+  const temp = cards.value[targetIndex];
+  cards.value[targetIndex] = cards.value[draggedIndex.value];
+  cards.value[draggedIndex.value] = temp;
+
+  draggedCard.value = null;
+  draggedIndex.value = null;
+};
 </script>
 
 <style scoped>
@@ -396,6 +389,7 @@ h2 {
   width: 100%;
   margin-bottom: 1rem;
   margin-top: 1rem;
+  position: relative;
 }
 
 /* Define styles for product-specific grid layout */
@@ -563,5 +557,19 @@ h2 {
   .heatmap-container {
     height: 300px;
   }
+}
+
+.dashboard-grid .card {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.dashboard-grid .card.is-dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  z-index: 20;
+}
+
+.dashboard-grid .card.drag-over {
+  transform: scale(1.02);
 }
 </style>

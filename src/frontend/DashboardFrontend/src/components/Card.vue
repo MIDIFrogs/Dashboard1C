@@ -1,5 +1,19 @@
 <template>
-  <div class="card" :class="{ 'is-expanded': expanded }">
+  <div 
+    class="card" 
+    :class="{ 
+      'is-expanded': expanded,
+      'is-dragging': isDragging,
+      'drag-over': isDragOver
+    }"
+    draggable="true"
+    @dragstart="handleDragStart"
+    @dragend="handleDragEnd"
+    @dragenter="handleDragEnter"
+    @dragleave="handleDragLeave"
+    @dragover="handleDragOver"
+    @drop="handleDrop"
+  >
     <div class="card-header">
       <h3>{{ title }}</h3>
       <div class="card-controls">
@@ -57,9 +71,25 @@ export default {
     interactive: {
       type: Boolean,
       default: true
+    },
+    isDragging: {
+      type: Boolean,
+      default: false
+    },
+    isDragOver: {
+      type: Boolean,
+      default: false
     }
   },
-  emits: ['toggleFullscreen'],
+  emits: [
+    'toggleFullscreen',
+    'dragStart',
+    'dragEnd',
+    'dragEnter',
+    'dragLeave',
+    'dragOver',
+    'drop'
+  ],
   setup(props, { emit }) {
     const chartCanvas = ref(null)
     const chartContainer = ref(null)
@@ -479,6 +509,25 @@ export default {
               }
             }
           }
+        case 'categoryDistribution':
+          // Category distribution chart
+          const distributionData = chartDataService.getProductCategoryDistribution(productId);
+          if (!distributionData) return getGeneralChartData(type, color);
+          return {
+            ...distributionData,
+            options: {
+              ...distributionData.options,
+              plugins: {
+                ...distributionData.options.plugins,
+                title: {
+                  display: true,
+                  text: `${productName} Category Performance`,
+                  color: '#fff',
+                  font: { size: 16 }
+                }
+              }
+            }
+          };
         case 'line':
           // Customer demographics (product custom chart 4)
           return {
@@ -601,11 +650,45 @@ export default {
       createChart()
     })
 
+    const handleDragStart = (event) => {
+      emit('dragStart', event);
+    };
+
+    const handleDragEnd = (event) => {
+      emit('dragEnd', event);
+    };
+
+    const handleDragEnter = (event) => {
+      event.preventDefault();
+      emit('dragEnter', event);
+    };
+
+    const handleDragLeave = (event) => {
+      event.preventDefault();
+      emit('dragLeave', event);
+    };
+
+    const handleDragOver = (event) => {
+      event.preventDefault();
+      emit('dragOver', event);
+    };
+
+    const handleDrop = (event) => {
+      event.preventDefault();
+      emit('drop', event);
+    };
+
     return {
       chartCanvas,
       chartContainer,
       isLoading,
-      toggleExpand
+      toggleExpand,
+      handleDragStart,
+      handleDragEnd,
+      handleDragEnter,
+      handleDragLeave,
+      handleDragOver,
+      handleDrop
     }
   }
 }
@@ -626,7 +709,19 @@ export default {
   transform-origin: center;
   will-change: transform, box-shadow, z-index;
   position: relative;
-  margin-bottom: 1px; /* Prevent margin collapse */
+  margin-bottom: 1px;
+  cursor: move;
+}
+
+.card.is-dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  z-index: 20;
+}
+
+.card.drag-over {
+  border: 2px dashed var(--primary-color);
+  transform: scale(1.02);
 }
 
 .card.is-expanded {
@@ -634,18 +729,12 @@ export default {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   transform: scale(1.05);
   filter: brightness(1.05);
+  cursor: default;
 }
 
-.card:not(.is-expanded) {
-  transform: scale(1);
-  opacity: 1;
-  filter: brightness(1);
-}
-
-.card:hover:not(.is-expanded) {
+.card:not(.is-expanded):not(.is-dragging):hover {
   transform: translateY(-5px);
   box-shadow: 0 7px 25px rgba(0, 0, 0, 0.25);
-  transition: all 0.2s ease;
 }
 
 .card-header {
