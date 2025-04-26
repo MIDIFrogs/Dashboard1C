@@ -1,0 +1,23 @@
+networks:
+  dev:
+
+services:
+  backend:
+    build:
+      dockerfile: ./TruckLogisticsAPI/Dockerfile
+      context: .
+    ports:
+      - "80:80"
+    volumes:
+      - './nginx.conf:/etc/nginx/nginx.conf'
+    depends_on:
+      - trucklogisticsapi
+    networks:
+      - dev
+  frontend:
+    build:
+      dockerfile: ./TruckLogisticsAPI/Dockerfile
+      context: .
+    networks:
+      - dev
+    restart: a
