@@ -1,12 +1,25 @@
 <template>
   <div class="quotation-map">
-    <div class="categories-grid">
-      <div 
-        v-for="category in categories" 
+    <div class="quotation-map-title">
+      <h3>Sales Quotation Map</h3>
+    </div>
+    <div v-if="isLoading" class="loading-state">
+      Loading categories...
+    </div>
+    <div v-else-if="error" class="error-state">
+      {{ error }}
+    </div>
+    <div
+      v-else
+      class="categories-grid"
+      ref="categoriesGridRef"
+    >
+      <div
+        v-for="category in categoryStats"
         :key="category.sector"
         class="category-card"
       >
-        <div 
+        <div
           class="category-header"
           @click="selectCategory(category.sector)"
         >
@@ -35,13 +48,13 @@
           @after-leave="endTransition"
         >
           <div class="products-grid" v-if="expandedCategory === category.sector">
-            <div 
-              v-for="product in category.products" 
+            <div
+              v-for="product in category.products"
               :key="product.id"
               class="product-card"
-              :class="{ 
-                'status-danger': product.planCompletion < 90 || product.timeCompliance < 90,
-                'status-success': product.planCompletion >= 90 && product.timeCompliance >= 90,
+              :class="{
+                'status-danger': getProductStatus(product) === 'danger',
+                'status-success': getProductStatus(product) === 'success',
                 'is-expanded': expandedProduct === product.id
               }"
               @click.stop="toggleProduct(product.id)"
@@ -50,20 +63,20 @@
                 <h4>{{ product.name }}</h4>
                 <span class="expand-indicator">{{ expandedProduct === product.id ? '−' : '+' }}</span>
               </div>
-              
+
               <div class="product-stats" :class="{ 'expanded': expandedProduct === product.id }">
                 <div class="basic-stats">
                   <div class="stat-row">
                     <span class="stat-label">Sales:</span>
-                    <span class="stat-value">${{ product.sales.toLocaleString() }}</span>
+                    <span class="stat-value">${{ getTotalSales(product).toLocaleString() }}</span>
                   </div>
                   <div class="stat-row">
                     <span class="stat-label">Plan:</span>
-                    <span class="stat-value">{{ product.planCompletion }}%</span>
+                    <span class="stat-value">{{ getCompletionRate(product).toFixed(1) }}%</span>
                   </div>
                   <div class="stat-row">
                     <span class="stat-label">Time:</span>
-                    <span class="stat-value">{{ product.timeCompliance }}%</span>
+                    <span class="stat-value">{{ getTimeCompliance(product).toFixed(1) }}%</span>
                   </div>
                 </div>
 
@@ -71,27 +84,27 @@
                   <div v-if="expandedProduct === product.id" class="detailed-stats">
                     <div class="stat-row">
                       <span class="stat-label">Monthly Growth:</span>
-                      <span class="stat-value">{{ product.monthlyGrowth }}%</span>
+                      <span class="stat-value">{{ getMonthlyGrowth(product).toFixed(1) }}%</span>
                     </div>
                     <div class="stat-row">
                       <span class="stat-label">Market Share:</span>
-                      <span class="stat-value">{{ product.marketShare }}%</span>
+                      <span class="stat-value">{{ getMarketShare(product).toFixed(1) }}%</span>
                     </div>
                     <div class="stat-row">
                       <span class="stat-label">Customer Rating:</span>
-                      <span class="stat-value">{{ product.rating }}/5</span>
+                      <span class="stat-value">{{ getRating(product).toFixed(1) }}/5</span>
                     </div>
                     <div class="stat-row">
                       <span class="stat-label">Units Sold:</span>
-                      <span class="stat-value">{{ product.unitsSold.toLocaleString() }}</span>
+                      <span class="stat-value">{{ getUnitsSold(product).toLocaleString() }}</span>
                     </div>
                     <div class="stat-row">
                       <span class="stat-label">Revenue Q1:</span>
-                      <span class="stat-value">${{ product.quarterlyRevenue.q1.toLocaleString() }}</span>
+                      <span class="stat-value">${{ getQuarterlyRevenue(product, 1).toLocaleString() }}</span>
                     </div>
                     <div class="stat-row">
                       <span class="stat-label">Revenue Q2:</span>
-                      <span class="stat-value">${{ product.quarterlyRevenue.q2.toLocaleString() }}</span>
+                      <span class="stat-value">${{ getQuarterlyRevenue(product, 2).toLocaleString() }}</span>
                     </div>
                   </div>
                 </transition>
@@ -105,200 +118,198 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
+import { getServiceFactory } from '@/api/services';
+import type { Category, ProductGroup, Sale } from '@/api/models';
+import type { AppliedFilters } from '@/api/types/filters';
 
-// Extended sample data with more categories and detailed product information
-const sampleProducts = {
-  'Technology': [
-    { 
-      id: 1, 
-      name: 'Smart Hub Pro',
-      sales: 150000,
-      planCompletion: 95,
-      timeCompliance: 92,
-      monthlyGrowth: 4.5,
-      marketShare: 15.3,
-      rating: 4.2,
-      unitsSold: 12500,
-      quarterlyRevenue: { q1: 68000, q2: 82000 }
-    },
-    { 
-      id: 2,
-      name: 'AI Assistant',
-      sales: 80000,
-      planCompletion: 85,
-      timeCompliance: 88,
-      monthlyGrowth: 3.2,
-      marketShare: 8.7,
-      rating: 3.9,
-      unitsSold: 8900,
-      quarterlyRevenue: { q1: 35000, q2: 45000 }
-    },
-    { 
-      id: 3,
-      name: 'Security Suite',
-      sales: 120000,
-      planCompletion: 92,
-      timeCompliance: 95,
-      monthlyGrowth: 5.1,
-      marketShare: 12.4,
-      rating: 4.5,
-      unitsSold: 15600,
-      quarterlyRevenue: { q1: 55000, q2: 65000 }
+// Initialize services
+const services = getServiceFactory(import.meta.env.DEV);
+const { categoryService, productService, saleService } = services;
+
+// State management
+const categories = ref<Category[]>([]);
+const expandedCategory = ref<string | null>(null);
+const expandedProduct = ref<number | null>(null);
+const isTransitioning = ref(false);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+const activeFilters = ref<AppliedFilters>({
+  categoryIds: [],
+  productIds: []
+});
+
+// Modify container sizing logic
+const categoriesGridRef = ref<HTMLElement | null>(null);
+
+// Modify the watch to only handle expansion state
+watch([expandedCategory, expandedProduct], async () => {
+  if (!categoriesGridRef.value) return;
+  
+  // Wait for DOM updates
+  await nextTick();
+  
+  // Scroll expanded card into view if needed
+  if (expandedProduct.value) {
+    const expandedCard = categoriesGridRef.value.querySelector('.product-card.is-expanded');
+    expandedCard?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}, { immediate: true });
+
+// Load initial data
+onMounted(async () => {
+  await loadCategories();
+});
+
+// Method to load categories with optional filters
+const loadCategories = async (filters?: AppliedFilters) => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    let response;
+
+    if (filters && (filters.categoryIds.length || filters.productIds.length || filters.regionIds?.length)) {
+      // Apply filters when loading categories
+      activeFilters.value = { ...filters };
+      response = await categoryService.getCategoriesFiltered(filters);
+    } else {
+      // Load all categories if no filters
+      response = await categoryService.getCategories(0, 50); // Get up to 50 categories
     }
-  ],
-  'Finance': [
-    { 
-      id: 4,
-      name: 'Trading Platform',
-      sales: 200000,
-      planCompletion: 98,
-      timeCompliance: 95,
-      monthlyGrowth: 6.2,
-      marketShare: 18.5,
-      rating: 4.7,
-      unitsSold: 5800,
-      quarterlyRevenue: { q1: 95000, q2: 105000 }
-    },
-    { 
-      id: 5,
-      name: 'Payment Gateway',
-      sales: 120000,
-      planCompletion: 92,
-      timeCompliance: 94,
-      monthlyGrowth: 4.8,
-      marketShare: 14.2,
-      rating: 4.4,
-      unitsSold: 9200,
-      quarterlyRevenue: { q1: 58000, q2: 62000 }
-    }
-  ],
-  'Healthcare': [
-    { 
-      id: 6,
-      name: 'Patient Monitor',
-      sales: 180000,
-      planCompletion: 96,
-      timeCompliance: 97,
-      monthlyGrowth: 5.5,
-      marketShare: 22.1,
-      rating: 4.8,
-      unitsSold: 3200,
-      quarterlyRevenue: { q1: 85000, q2: 95000 }
-    },
-    { 
-      id: 7,
-      name: 'Medical Records',
-      sales: 90000,
-      planCompletion: 88,
-      timeCompliance: 86,
-      monthlyGrowth: 3.8,
-      marketShare: 9.5,
-      rating: 3.7,
-      unitsSold: 4500,
-      quarterlyRevenue: { q1: 42000, q2: 48000 }
-    }
-  ],
-  'Manufacturing': [
-    { 
-      id: 8,
-      name: 'Assembly Line',
-      sales: 250000,
-      planCompletion: 94,
-      timeCompliance: 91,
-      monthlyGrowth: 4.2,
-      marketShare: 25.8,
-      rating: 4.3,
-      unitsSold: 180,
-      quarterlyRevenue: { q1: 120000, q2: 130000 }
-    },
-    { 
-      id: 9,
-      name: 'Quality Control',
-      sales: 140000,
-      planCompletion: 91,
-      timeCompliance: 93,
-      monthlyGrowth: 3.9,
-      marketShare: 16.4,
-      rating: 4.1,
-      unitsSold: 850,
-      quarterlyRevenue: { q1: 65000, q2: 75000 }
-    }
-  ],
-  'Energy': [
-    { 
-      id: 10,
-      name: 'Solar Solutions',
-      sales: 300000,
-      planCompletion: 97,
-      timeCompliance: 96,
-      monthlyGrowth: 7.2,
-      marketShare: 28.5,
-      rating: 4.6,
-      unitsSold: 2200,
-      quarterlyRevenue: { q1: 140000, q2: 160000 }
-    },
-    { 
-      id: 11,
-      name: 'Smart Grid',
-      sales: 220000,
-      planCompletion: 93,
-      timeCompliance: 92,
-      monthlyGrowth: 5.8,
-      marketShare: 19.7,
-      rating: 4.4,
-      unitsSold: 1800,
-      quarterlyRevenue: { q1: 105000, q2: 115000 }
-    }
-  ]
+
+    categories.value = response.items;
+    isLoading.value = false;
+  } catch (e) {
+    error.value = 'Failed to load categories';
+    isLoading.value = false;
+    console.error('Error loading categories:', e);
+  }
+};
+
+// Method to apply filters (called from parent component)
+const applyFilters = async (filters: AppliedFilters) => {
+  console.log('Applying filters to QuotationMap:', filters);
+  await loadCategories(filters);
+
+  // Reset expanded states when filters change
+  expandedCategory.value = null;
+  expandedProduct.value = null;
+};
+
+// Expose the applyFilters method
+defineExpose({ applyFilters });
+
+// Computed properties for statistics
+const categoryStats = computed(() => {
+  return categories.value.map(category => ({
+    sector: category.name,
+    products: category.products,
+    totalScore: category.products.reduce((sum, product) =>
+      sum + product.sales[product.sales.length - 1].actualSales, 0),
+    avgCompletion: calculateAvgCompletion(category.products)
+  }));
+});
+
+// Helper function to calculate average completion
+function calculateAvgCompletion(products: ProductGroup[]): number {
+  const completionRates = products.flatMap(product =>
+    product.sales.map(sale => (sale.actualSales / sale.targetAmount) * 100)
+  );
+
+  if (completionRates.length === 0) return 0;
+  return completionRates.reduce((sum, rate) => sum + rate, 0) / completionRates.length;
 }
 
-const expandedCategory = ref<string | null>(null)
-const expandedProduct = ref<number | null>(null)
-const isTransitioning = ref(false)
+// Event handlers
+const selectCategory = async (sector: string) => {
+  if (isTransitioning.value) return;
 
-const categories = computed(() => {
-  return Object.entries(sampleProducts).map(([sector, products]) => ({
-    sector,
-    products,
-    totalScore: products.reduce((sum, p) => sum + p.sales, 0),
-    avgCompletion: products.reduce((sum, p) => sum + p.planCompletion, 0) / products.length
-  }))
-})
+  try {
+    if (expandedCategory.value === sector) {
+      expandedCategory.value = null;
+    } else {
+      expandedCategory.value = sector;
+      // Load detailed product data if not already loaded
+      const category = categories.value.find(c => c.name === sector);
+      if (category && (!category.products || category.products.length === 0)) {
+        const products = await productService.getProductsByCategoryId(category.id);
+        // Load sales data for each product
+        for (const product of products) {
+          product.sales = await saleService.getSalesByProductId(product.id);
+        }
+        // Update the category's products
+        category.products = products;
+      }
+    }
+    expandedProduct.value = null;
+  } catch (e) {
+    error.value = 'Failed to load category details';
+    console.error('Error loading category details:', e);
+  }
+};
 
-const selectCategory = (sector: string): void => {
-  if (isTransitioning.value) return
-  expandedCategory.value = expandedCategory.value === sector ? null : sector
-  expandedProduct.value = null
-}
-
-const toggleProduct = (productId: number): void => {
-  expandedProduct.value = expandedProduct.value === productId ? null : productId
-}
+const toggleProduct = async (productId: number) => {
+  try {
+    if (expandedProduct.value === productId) {
+      expandedProduct.value = null;
+    } else {
+      expandedProduct.value = productId;
+      // Load detailed product stats if needed
+      const stats = await productService.getProductStats(productId);
+      // You can use the stats to show additional information in the UI
+      console.log('Product stats:', stats);
+    }
+  } catch (e) {
+    error.value = 'Failed to load product details';
+    console.error('Error loading product details:', e);
+  }
+};
 
 const startTransition = (el: Element): void => {
-  if (!(el instanceof HTMLElement)) return
-  isTransitioning.value = true
-}
+  if (!(el instanceof HTMLElement)) return;
+  isTransitioning.value = true;
+};
 
 const endTransition = (el: Element): void => {
-  if (!(el instanceof HTMLElement)) return
-  isTransitioning.value = false
-}
+  if (!(el instanceof HTMLElement)) return;
+  isTransitioning.value = false;
+};
 </script>
 
 <style scoped>
 .quotation-map {
-  padding: 20px;
   height: 100%;
-  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: auto; /* Allow the main container to scroll */
+}
+
+.quotation-map-title {
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.quotation-map-title h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .categories-grid {
+  padding: 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   align-items: start;
+  position: relative;
+  min-height: min-content;
+  height: fit-content;
+  width: 100%;
 }
 
 .category-card {
@@ -310,6 +321,8 @@ const endTransition = (el: Element): void => {
   display: flex;
   flex-direction: column;
   min-height: 140px;
+  position: relative;
+  height: fit-content;
 }
 
 .category-card:hover {
@@ -364,29 +377,31 @@ const endTransition = (el: Element): void => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
-  grid-column: 1 / -1;
   width: 100%;
+  position: relative;
+  z-index: 10;
+  height: fit-content;
 }
 
 /* Expand transition */
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: top;
-  overflow: hidden;
+  position: relative;
+  z-index: 1000;
+  overflow: visible;
 }
 
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  max-height: 0;
   transform: scaleY(0);
 }
 
 .expand-enter-to,
 .expand-leave-from {
   opacity: 1;
-  max-height: 1000px;
   transform: scaleY(1);
 }
 
@@ -399,6 +414,7 @@ const endTransition = (el: Element): void => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .product-card:hover {
@@ -408,6 +424,10 @@ const endTransition = (el: Element): void => {
 
 .product-card.is-expanded {
   grid-column: span 2;
+  z-index: 20;
+  background: var(--card-background);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .product-header {
@@ -501,18 +521,9 @@ const endTransition = (el: Element): void => {
   }
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 3px;
+/* Ensure the container for scrolling has proper overflow handling */
+.quotation-map > :not(.quotation-map-title) {
+  overflow: visible;
 }
 
 /* Fade transition */
@@ -525,4 +536,97 @@ const endTransition = (el: Element): void => {
 .fade-leave-to {
   opacity: 0;
 }
-</style> 
+
+/* Add new styles for loading and error states */
+.loading-state,
+.error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.error-state {
+  color: #f44336;
+}
+
+/* Add custom scrollbar only to the main content area */
+.quotation-map {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) rgba(255, 255, 255, 0.1);
+}
+
+.quotation-map::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quotation-map::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.quotation-map::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+</style>
+
+<script lang="ts">
+// Helper functions for product statistics
+function getProductStatus(product: ProductGroup): 'danger' | 'success' | null {
+  const completionRate = getCompletionRate(product);
+  const timeCompliance = getTimeCompliance(product);
+  if (completionRate < 90 || timeCompliance < 90) return 'danger';
+  if (completionRate >= 90 && timeCompliance >= 90) return 'success';
+  return null;
+}
+
+function getTotalSales(product: ProductGroup): number {
+  return product.sales[product.sales.length - 1].actualSales;
+}
+
+function getCompletionRate(product: ProductGroup): number {
+  const totalActual = product.sales.reduce((sum, sale) => sum + sale.actualSales, 0);
+  const totalTarget = product.sales.reduce((sum, sale) => sum + sale.targetAmount, 0);
+  return totalTarget ? (totalActual / totalTarget) * 100 : 0;
+}
+
+function getTimeCompliance(product: ProductGroup): number {
+  // This should be calculated based on actual delivery dates vs planned dates
+  // For now, return a mock value
+  return 95;
+}
+
+function getMonthlyGrowth(product: ProductGroup): number {
+  const currentYear = new Date().getFullYear();
+  const currentYearSales = product.sales.filter(s => s.year === currentYear);
+  const lastYearSales = product.sales.filter(s => s.year === currentYear - 1);
+
+  const currentTotal = currentYearSales.reduce((sum, sale) => sum + sale.actualSales, 0);
+  const lastTotal = lastYearSales.reduce((sum, sale) => sum + sale.actualSales, 0);
+
+  return lastTotal ? ((currentTotal - lastTotal) / lastTotal) * 100 : 0;
+}
+
+function getMarketShare(product: ProductGroup): number {
+  // This should come from backend
+  return 15.3;
+}
+
+function getRating(product: ProductGroup): number {
+  // This should come from backend
+  return 4.2;
+}
+
+function getUnitsSold(product: ProductGroup): number {
+  return product.sales.reduce((sum, sale) => sum + sale.actualSales, 0);
+}
+
+function getQuarterlyRevenue(product: ProductGroup, quarter: number): number {
+  const currentYear = new Date().getFullYear();
+  const quarterSales = product.sales.filter(s => s.year === currentYear && s.quarter === quarter);
+  return quarterSales.reduce((sum, sale) => sum + sale.actualSales, 0);
+}
+</script>
