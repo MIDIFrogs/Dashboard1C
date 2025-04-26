@@ -37,7 +37,7 @@
         <h2 class="section-title">Dashboard Analytics</h2>
       </div>
       
-      <div class="dashboard-grid" :class="{ 'product-grid': isProductView }">
+      <div class="dashboard-grid" :class="gridClasses">
         <!-- Grid layout will be different based on if we're in product view or general view -->
         <template v-if="!isProductView">
           <!-- General dashboard view -->
@@ -177,7 +177,8 @@ const cards = ref(!props.isProductView ? [
   { title: "Monthly Sales History", type: "histogram", color: "#00b09b" },
   { title: "Sales Plan Achievement", type: "radar", color: "#fc466b" },
   { title: "YoY Category Comparison", type: "bar", color: "#ef476f" },
-  { title: "Target vs Actual Sales", type: "area", color: "#06d6a0" }
+  { title: "Product Performance Rankings", type: "performance", color: "#06d6a0" },
+  { title: "Target vs Actual Sales", type: "area", color: "#ffd166" }
 ] : [
   { title: "Monthly Sales History", type: "histogram", color: "#00b09b" },
   { title: "Quarterly Sales Distribution", type: "radar", color: "#fc466b" },
@@ -186,6 +187,13 @@ const cards = ref(!props.isProductView ? [
   { title: "Regional Distribution", type: "bar", color: "#ef476f" },
   { title: "Target vs Actual Sales", type: "area", color: "#06d6a0" }
 ]);
+
+// Update grid layout to accommodate 6 cards (2x3 grid)
+const gridClasses = computed(() => ({
+  'dashboard-grid': true,
+  'product-grid': props.isProductView,
+  'grid-2x3': true
+}));
 
 // Event handlers
 const returnToGeneral = (): void => {
@@ -383,13 +391,16 @@ h2 {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: minmax(300px, auto);
   gap: 1rem;
   width: 100%;
   margin-bottom: 1rem;
   margin-top: 1rem;
   position: relative;
+}
+
+.dashboard-grid.grid-2x3 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(300px, auto);
 }
 
 /* Define styles for product-specific grid layout */
@@ -426,6 +437,10 @@ h2 {
     height: 450px;
     max-height: 35vh;
   }
+
+  .dashboard-grid.grid-2x3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 1200px) {
@@ -440,7 +455,7 @@ h2 {
     height: 300px;
   }
 
-  .dashboard-grid {
+  .dashboard-grid.grid-2x3 {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.25rem;
   }
@@ -451,10 +466,13 @@ h2 {
 }
 
 @media (max-width: 768px) {
-  .dashboard-grid {
+  .dashboard-grid.grid-2x3 {
     grid-template-columns: 1fr;
     gap: 1rem;
-    grid-auto-rows: minmax(250px, auto);
+  }
+  
+  .dashboard-grid .card {
+    min-height: 250px;
   }
   
   h2 {

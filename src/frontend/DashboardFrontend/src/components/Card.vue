@@ -18,7 +18,7 @@
       <h3>{{ title }}</h3>
       <div class="card-controls">
         <button class="control-btn" @click="toggleExpand" :title="expanded ? 'Collapse' : 'Expand'">
-          <span class="icon">{{ expanded ? '⤧' : '⤢' }}</span>
+          <span class="icon" :class="{ 'is-expanded': expanded }">⤢</span>
         </button>
       </div>
     </div>
@@ -283,6 +283,9 @@ export default {
               }
             }
           }
+        case 'performance':
+          // Product performance analytics chart
+          return chartDataService.getProductPerformanceAnalytics();
         case 'line':
           // Growth trends line chart (custom chart 4)
           return {
@@ -760,6 +763,17 @@ export default {
   gap: 8px;
 }
 
+.icon {
+  display: inline-block;
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+  transform-origin: center;
+}
+
+.icon.is-expanded {
+  transform: rotate(180deg);
+}
+
 .control-btn {
   background: transparent;
   border: none;
@@ -769,11 +783,25 @@ export default {
   padding: 6px 10px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .control-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
+.is-expanded .control-btn {
+  color: var(--primary-color);
+  background: rgba(0, 242, 254, 0.1);
 }
 
 .chart-container {
@@ -831,11 +859,6 @@ canvas {
 .is-expanded .card-header h3 {
   font-weight: 600;
   color: white;
-}
-
-.is-expanded .control-btn {
-  color: var(--primary-color);
-  background: rgba(0, 242, 254, 0.1);
 }
 
 .is-expanded::after {

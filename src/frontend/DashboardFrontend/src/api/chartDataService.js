@@ -422,6 +422,122 @@ export const chartDataService = {
                 }
             }
         };
+    },
+
+    /**
+     * Returns product performance analytics based on sales achievements
+     * Calculates performance scores and rankings for products
+     */
+    getProductPerformanceAnalytics() {
+        const currentYear = new Date().getFullYear();
+        
+        // Calculate performance scores for each product
+        const productScores = mockCategories.flatMap(category => 
+            category.products.map(product => {
+                // Get this year's sales
+                const thisYearSales = product.sales.filter(s => s.year === currentYear);
+                
+                // Calculate achievement score
+                let score = 0;
+                thisYearSales.forEach(sale => {
+                    // Points for meeting target
+                    if (sale.actualSales >= sale.targetAmount) {
+                        score += 1;
+                    }
+                    // Bonus points for exceeding target by 20%
+                    if (sale.actualSales >= sale.targetAmount * 1.2) {
+                        score += 0.5;
+                    }
+                    // Points for quarter-over-quarter growth
+                    if (sale.quarter > 1) {
+                        const prevQuarter = thisYearSales.find(s => s.quarter === sale.quarter - 1);
+                        if (prevQuarter && sale.actualSales > prevQuarter.actualSales) {
+                            score += 0.5;
+                        }
+                    }
+                });
+
+                return {
+                    name: product.name,
+                    category: category.name,
+                    score: score,
+                    maxPossibleScore: thisYearSales.length * 2, // Maximum possible points per quarter
+                    achievement: (score / (thisYearSales.length * 2) * 100).toFixed(1)
+                };
+            })
+        );
+
+        // Sort by score descending
+        productScores.sort((a, b) => b.score - a.score);
+
+        // Take top 10 products
+        const topProducts = productScores.slice(0, 10);
+
+        return {
+            type: 'bar',
+            data: {
+                labels: topProducts.map(p => p.name),
+                datasets: [{
+                    label: 'Performance Score',
+                    data: topProducts.map(p => p.score),
+                    backgroundColor: topProducts.map((_, index) => 
+                        `rgba(76, 175, 80, ${1 - (index * 0.07)})`
+                    ),
+                    borderColor: topProducts.map((_, index) => 
+                        `rgb(76, 175, 80)`
+                    ),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Top 10 Product Performance Scores',
+                        color: '#fff',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const product = topProducts[context.dataIndex];
+                                return [
+                                    `Score: ${product.score.toFixed(1)} / ${product.maxPossibleScore}`,
+                                    `Achievement: ${product.achievement}%`,
+                                    `Category: ${product.category}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Performance Score',
+                            color: '#fff'
+                        },
+                        ticks: { color: '#fff' },
+                        grid: { color: '#ffffff20' }
+                    },
+                    y: {
+                        ticks: { 
+                            color: '#fff',
+                            callback: function(value) {
+                                const label = this.getLabelForValue(value);
+                                return label.length > 25 ? label.substr(0, 22) + '...' : label;
+                            }
+                        },
+                        grid: { color: '#ffffff20' }
+                    }
+                }
+            }
+        };
     }
 };
 
