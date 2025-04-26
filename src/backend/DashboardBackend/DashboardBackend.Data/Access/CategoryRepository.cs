@@ -38,5 +38,10 @@ namespace DashboardBackend.Data.Access
                 await context.SaveChangesAsync();
             }
         }
+
+        public async Task<Category?> GetCategoryByNameAsync(string name)
+        {
+            return await context.Categories.FirstOrDefaultAsync(c => c.Name == name);
+        }
     }
 }

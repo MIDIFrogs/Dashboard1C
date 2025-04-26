@@ -1,6 +1,6 @@
 ﻿using DashboardBackend.Data.Models;
 
-namespace DashboardBackend.Api.Transfer
+namespace DashboardBackend.Core.Transfer
 {
     /// <summary>
     /// Provides extension methods for mapping domain entities to data transfer objects (DTOs).
@@ -19,7 +19,7 @@ namespace DashboardBackend.Api.Transfer
                 Id = category.Id,
                 Name = category.Name,
                 Weight = category.Weight,
-                Products = [.. category.Products.Select(ToDto)]
+                ProductIds = [.. category.Products.Select(x => x.Id)]
             };
         }
 
@@ -34,8 +34,9 @@ namespace DashboardBackend.Api.Transfer
             {
                 Id = productGroup.Id,
                 Name = productGroup.Name,
+                Region = productGroup.Region,
                 CategoryId = productGroup.CategoryId,
-                Sales = [.. productGroup.Sales.Select(ToDto)]
+                SaleIds = [.. productGroup.Sales.Select(x => x.Id)]
             };
         }
 
@@ -48,14 +49,28 @@ namespace DashboardBackend.Api.Transfer
         {
             return new SaleDto
             {
-                SaleId = sale.SaleId,
-                Year = sale.Year,
-                Quarter = sale.Quarter,
+                Id = sale.Id,
+                ReportId = sale.ReportId,
                 ProductId = sale.ProductId,
                 TargetAmount = sale.TargetAmount,
                 ActualSales = sale.ActualSales
             };
         }
-    }
 
+        /// <summary>
+        /// Maps a <see cref="Report"/> entity to a <see cref="ReportDto"/> data transfer object.
+        /// </summary>
+        /// <param name="report">The report entity to map.</param>
+        /// <returns>A <see cref="ReportDto"/> representing the mapped report.</returns>
+        public static ReportDto ToDto(this Report report)
+        {
+            return new ReportDto
+            {
+                Id = report.Id,
+                Quarter = report.Quarter,
+                Year = report.Year,
+                Sales = [.. report.Sales.Select(ToDto)]
+            };
+        }
+    }
 }

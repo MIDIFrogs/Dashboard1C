@@ -15,6 +15,7 @@ namespace DashboardBackend.Data
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IProductGroupRepository, ProductGroupRepository>();
             services.AddScoped<ISaleRepository, SaleRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
             return services;
         }
     }

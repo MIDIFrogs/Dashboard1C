@@ -1,4 +1,4 @@
-﻿using DashboardBackend.Api.Transfer;
+﻿using DashboardBackend.Core.Transfer;
 using DashboardBackend.Data.Access;
 using DashboardBackend.Data.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -59,15 +59,14 @@ namespace DashboardBackend.Api.Controllers
 
             var sale = new Sale
             {
-                Year = saleDto.Year,
-                Quarter = saleDto.Quarter,
                 ProductId = saleDto.ProductId,
+                ReportId = saleDto.ReportId,
                 TargetAmount = saleDto.TargetAmount,
                 ActualSales = saleDto.ActualSales
             };
 
             await salesRepository.AddAsync(sale);
-            return CreatedAtAction(nameof(GetSale), new { saleId = sale.SaleId }, sale.ToDto());
+            return CreatedAtAction(nameof(GetSale), new { saleId = sale.Id }, sale.ToDto());
         }
 
         /// <summary>
@@ -79,7 +78,7 @@ namespace DashboardBackend.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateSale(int id, [FromBody] SaleDto saleDto)
         {
-            if (id != saleDto.SaleId)
+            if (id != saleDto.Id)
             {
                 return BadRequest("Sale ID mismatch.");
             }
@@ -95,9 +94,8 @@ namespace DashboardBackend.Api.Controllers
                 return NotFound();
             }
 
-            existingSale.Year = saleDto.Year;
-            existingSale.Quarter = saleDto.Quarter;
             existingSale.ProductId = saleDto.ProductId;
+            existingSale.ReportId = saleDto.ReportId;
             existingSale.TargetAmount = saleDto.TargetAmount;
             existingSale.ActualSales = saleDto.ActualSales;
 

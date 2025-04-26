@@ -31,6 +31,9 @@ namespace DashboardBackend.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Categories");
                 });
 
@@ -55,12 +58,35 @@ namespace DashboardBackend.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("DashboardBackend.Data.Models.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quarter")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Year", "Quarter")
+                        .IsUnique();
+
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("DashboardBackend.Data.Models.Sale", b =>
                 {
-                    b.Property<int>("SaleId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -70,18 +96,17 @@ namespace DashboardBackend.Data.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Quarter")
+                    b.Property<int>("ReportId")
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("TargetAmount")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Year")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("SaleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ReportId");
 
                     b.ToTable("Sales");
                 });
@@ -105,7 +130,15 @@ namespace DashboardBackend.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DashboardBackend.Data.Models.Report", "Report")
+                        .WithMany("Sales")
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Product");
+
+                    b.Navigation("Report");
                 });
 
             modelBuilder.Entity("DashboardBackend.Data.Models.Category", b =>
@@ -114,6 +147,11 @@ namespace DashboardBackend.Data.Migrations
                 });
 
             modelBuilder.Entity("DashboardBackend.Data.Models.ProductGroup", b =>
+                {
+                    b.Navigation("Sales");
+                });
+
+            modelBuilder.Entity("DashboardBackend.Data.Models.Report", b =>
                 {
                     b.Navigation("Sales");
                 });
