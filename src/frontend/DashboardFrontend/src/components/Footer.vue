@@ -1,10 +1,10 @@
 <template>
   <footer class="footer">
-    <a href="https://t.me/yourtelegram" target="_blank">TG</a>
+    <a href="https://t.me/jojer_m" target="_blank">TG</a>
     <span>|</span>
-    <a href="https://github.com/yourgithub" target="_blank">GIT</a>
+    <a href="https://github.com/MIDIFrogs" target="_blank">GIT</a>
     <span>|</span>
-    <span class="copyright">© 2024</span>
+    <span class="copyright">© 2025</span>
   </footer>
 </template>
 
